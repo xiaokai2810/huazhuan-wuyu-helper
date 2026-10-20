@@ -3,7 +3,7 @@
   const E = globalThis.AzulEngine, G = globalThis.AzulGame, AI = globalThis.AzulAI;
   const $ = (selector) => document.querySelector(selector);
   const KEY = "azul-match-v1";
-  let game = load(), selection = null, pendingRow, overlay = null, expanded = false;
+  let game = load(), selection = null, pendingRow, overlay = null;
   let busy = false, worker = null, requestId = 0, watchdog = null, ticker = null, fallbackPending = false;
   function load() {
     try {
@@ -27,52 +27,88 @@
     const p = game.position;
     const factories = p.factories.map((factory, index) => `<div class="game-factory ${selection?.kind === "factory" && selection.index === index ? "plate-selected" : ""}"><span class="factory-index">${String(index + 1).padStart(2, "0")}</span><div class="game-factory-tiles">${factory.map((color) => `<button type="button" class="game-tile ${color ? "" : "void"} ${isSelected("factory", index, color) ? "chosen" : ""}" data-game-source="factory" data-game-index="${index}" data-game-color="${color || ""}" ${!myTurn() || !color ? "disabled" : ""} aria-label="从第${index + 1}工厂选择${color ? E.COLOR_NAMES[color] : "空"}砖">${tile(color)}</button>`).join("")}</div></div>`).join("");
     const center = E.COLORS.map((color) => `<button type="button" class="center-pick ${isSelected("center", -1, color) ? "chosen" : ""}" data-game-source="center" data-game-index="-1" data-game-color="${color}" ${!myTurn() || !p.center[color] ? "disabled" : ""} aria-label="从中央区选择${E.COLOR_NAMES[color]}砖${p.center[color]}块">${tile(color)}<b>${p.center[color]}</b></button>`).join("");
-    return `<section class="game-market" aria-label="公共牌面"><div class="market-heading"><span>公共圆盘</span><small>点击同色花砖，一起拿走</small></div><div class="game-factories">${factories}</div><div class="game-center"><div class="center-heading"><span>中央区</span><i class="token-badge">${p.firstPlayerToken ? "① 首位取砖者先手" : `① 下轮${game.tokenOwner === "me" ? "你" : "对手"}先手`}</i></div><div class="center-colors">${center}</div></div><div class="supply-meta"><span>牌袋 <b>${game.bag.length}</b></span><span>弃砖 <b>${game.discard.length}</b></span><span>经典彩色墙</span></div><div class="latest-move"><span>上一步</span>${esc(game.log[0] || "花砖已就绪，选一组心仪的颜色。")}</div></section>`;
+    return `<section class="game-market" aria-label="公共牌面"><div class="market-heading"><span>公共圆盘</span><small>牌袋 ${game.bag.length} · 弃砖 ${game.discard.length}</small></div><div class="game-factories">${factories}</div><div class="game-center"><div class="center-heading"><span>中央区</span><i class="token-badge">${p.firstPlayerToken ? "① 首位取砖者先手" : `① 下轮${game.tokenOwner === "me" ? "你" : "对手"}先手`}</i></div><div class="center-colors">${center}</div></div><div class="latest-move"><span>上一步</span>${esc(game.log[0] || "花砖已就绪，选一组心仪的颜色。")}</div></section>`;
   }
   function renderBoard(player) {
     const b = game.position[player], mine = player === "me";
     const plan = mine ? preview() : null;
+    const tally = G.roundScore(b);
     const rows = b.lines.map((line, row) => {
       const legal = mine && myTurn() && selection && E.canPlace(b, row, selection.color);
       const planned = legal && pendingRow === row;
       const fit = legal ? Math.min(selection.count, row + 1 - line.count) : 0;
       const target = legal ? E.wallColumn(row, selection.color) : -1;
       const cells = Array.from({ length: row + 1 }, (_, i) => tile(i < line.count ? line.color : planned && i < line.count + fit ? selection.color : null, planned && i >= line.count && i < line.count + fit)).join("");
-      const inner = `<span class="line-number">${row + 1}</span><span class="line-cells">${cells}</span><span class="row-hint">${legal ? (planned ? "✓" : `+${fit}`) : ""}</span>`;
+      const inner = `<span class="line-number">${row + 1}</span><span class="line-cells">${cells}</span><span class="row-hint">${legal ? (planned ? "✓" : `+${fit}`) : line.count === row + 1 ? "✓" : ""}</span>`;
       const left = mine ? `<button type="button" class="battle-line ${legal ? "legal" : ""} ${planned ? "planned" : ""}" data-game-row="${row}" ${legal ? "" : "disabled"} aria-label="放入第${row + 1}行" aria-pressed="${Boolean(planned)}">${inner}</button>` : `<div class="battle-line">${inner}</div>`;
       const last = game.lastMove?.player === player && game.lastMove.row === row && game.phase === "playing";
-      return `<div class="battle-row ${last ? "last-placement" : ""}">${left}<div class="battle-wall-row">${b.wall[row].map((filled, col) => `<span class="battle-wall-cell ${filled ? "filled" : ""} ${col === target ? "target" : ""} ${planned && col === target ? "planned-target" : ""}" title="${E.COLOR_NAMES[E.WALL_PATTERN[row][col]]}${filled ? "，已贴" : "，未贴"}">${tile(E.WALL_PATTERN[row][col])}</span>`).join("")}</div></div>`;
+      return `<div class="battle-row ${last ? "last-placement" : ""}">${left}<div class="battle-wall-row">${b.wall[row].map((filled, col) => `<span class="battle-wall-cell ${filled ? "filled" : ""} ${!filled && line.count === row + 1 && E.wallColumn(row, line.color) === col ? "pending-wall" : ""} ${col === target ? "target" : ""} ${planned && col === target ? "planned-target" : ""}" title="${E.COLOR_NAMES[E.WALL_PATTERN[row][col]]}${filled ? "，已贴" : "，未贴"}">${tile(E.WALL_PATTERN[row][col])}</span>`).join("")}</div></div>`;
     }).join("");
     const floor = game.floorTiles[player].slice();
     if (!game.position.firstPlayerToken && game.tokenOwner === player && game.markerSlot !== null) floor.splice(game.markerSlot, 0, "marker");
     const oldCount = b.floor;
     if (plan) { if (plan.tookMarker) floor.splice(oldCount, 0, "marker"); floor.push(...Array(plan.overflow).fill(selection.color)); }
     const floorHtml = E.FLOOR_COSTS.map((cost, i) => `<span class="floor-slot ${plan && i >= oldCount && floor[i] ? "floor-preview" : ""}">${floor[i] === "marker" ? '<span class="marker-tile">1</span>' : tile(floor[i], Boolean(plan && i >= oldCount && floor[i]))}<small>−${cost}</small></span>`).join("");
-    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${!mine && expanded ? "expanded" : ""} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${mine ? "你的棋盘" : "对手棋盘"}"><div class="battle-board-header"><div><i class="board-avatar">${mine ? "你" : "AI"}</i><h3>${mine ? "你的花砖墙" : `${AI.LEVELS[game.level].name}的花砖墙`}</h3></div>${!mine ? `<button class="inspect-opponent" type="button" data-game-inspect="true" aria-expanded="${expanded}">${expanded ? "收起" : "展开"}</button>` : '<span class="board-tag">YOUR BOARD</span>'}</div><div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor"><div class="floor-heading"><span>地板线</span><b>−${E.floorPenalty(b.floor)} 分</b></div><div class="floor-slots">${floorHtml}</div></div></div>${mine ? `<button class="floor-drop ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"}>放弃这组花砖，全部移入地板 <span>↘</span></button>` : ""}</section>`;
+    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${mine ? "你的棋盘" : "对手棋盘"}"><div class="battle-board-header"><div><i class="board-avatar">${mine ? "你" : "机"}</i><h3>${mine ? "你的花砖墙" : `${AI.LEVELS[game.level].name}的花砖墙`}</h3></div><span class="board-round" title="已完成的图案线在公共池取空后统一贴墙计分">贴墙 +${tally.wallPoints} · 地板 −${tally.floorPoints}</span></div><div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor"><div class="floor-heading">${mine ? `<button class="floor-drop ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"} aria-label="全部放入地板">地板 ↘</button>` : "<span>地板线</span>"}<b>−${E.floorPenalty(b.floor)} 分</b></div><div class="floor-slots">${floorHtml}</div></div></div></section>`;
   }
   function renderDock() {
     if (game.phase !== "playing") return "";
     if (!myTurn()) return `<div class="action-dock ai-thinking"><div class="dock-symbol"><span class="thinking-dot"></span></div><div class="dock-copy"><b>${AI.LEVELS[game.level].name}正在推演局面</b><span class="ai-clock">观察相邻、卡位与轮末余砖…</span></div><div class="thinking-bars"><i></i><i></i><i></i></div></div>`;
     if (!selection) return `<div class="action-dock"><div class="dock-symbol">✦</div><div class="dock-copy"><b>轮到你了，先选一组花砖</b><span>点击公共圆盘或中央区的任一颜色</span></div><span class="dock-step">01 / 选砖</span></div>`;
     const plan = preview();
-    return `<div class="action-dock has-selection"><div class="dock-picked">${tile(selection.color)}<b>×${selection.count}</b></div><div class="dock-copy"><b>${pendingRow === undefined ? "选择一条高亮图案线" : pendingRow === null ? "全部放入地板" : `放入第 ${pendingRow + 1} 行`}</b><span>${plan ? `本轮成墙新增 +${plan.wallGain} · 地板新增 −${plan.cost}${plan.overflow ? ` · 溢出 ${plan.overflow} 块` : ""}` : "选好落点后，再确认落砖"}</span></div><button class="dock-cancel" type="button" data-game-cancel="true" aria-label="取消选择">×</button><button class="primary-button confirm-move" type="button" data-game-confirm="true" ${pendingRow === undefined ? "disabled" : ""}>确认落砖 <span>→</span></button></div>`;
+    return `<div class="action-dock has-selection"><div class="dock-picked">${tile(selection.color)}<b>×${selection.count}</b></div><div class="dock-copy"><b>${pendingRow === undefined ? "选择一条高亮图案线" : pendingRow === null ? "全部放入地板" : `放入第 ${pendingRow + 1} 行`}</b><span>${plan ? `贴墙 +${plan.wallGain} · 地板 −${plan.cost}${plan.overflow ? ` · 溢出 ${plan.overflow} 块` : ""}` : "选好落点后，再确认落砖"}</span></div><button class="dock-cancel" type="button" data-game-cancel="true" aria-label="取消选择">×</button><button class="primary-button confirm-move" type="button" data-game-confirm="true" ${pendingRow === undefined ? "disabled" : ""}>确认落砖 <span>→</span></button></div>`;
   }
   function renderResults() {
     if (game.phase === "playing") return "";
     const finished = game.phase === "finished";
     const title = finished ? game.winner === "tie" ? "平分秋色" : game.winner === "me" ? "这一局，你更胜一筹" : "好对手，值得再来一局" : `第 ${game.round} 轮 · 贴墙结算`;
-    return `<div class="results-scrim"><section class="round-summary" role="dialog" aria-modal="true" aria-labelledby="result-title"><div class="result-emblem">${finished ? "✦" : "◇"}</div><span class="section-kicker">${finished ? "GAME COMPLETE" : "ROUND COMPLETE"}</span><h3 id="result-title">${title}</h3><div class="result-scores"><div><span>你</span><b>${game.position.me.score}</b></div><i>:</i><div><span>${AI.LEVELS[game.level].name}</span><b>${game.position.rival.score}</b></div></div><div class="result-breakdown">${["me", "rival"].map((p) => { const s = game.summary[p]; return `<p><b>${p === "me" ? "你" : "对手"}</b><span>成墙 +${s.wallPoints}</span><span>地板 −${s.floorPoints}</span>${finished ? `<span>奖励 +${s.bonus}</span>` : ""}</p>`; }).join("")}</div>${finished ? `<button type="button" class="primary-button" data-game-restart="true">同一强度，再来一局 ↗</button>` : `<button type="button" class="primary-button" data-game-next="true">进入第 ${game.round + 1} 轮 →</button>`}<button class="result-back" type="button" data-game-home="true">返回大厅</button></section></div>`;
+    return `<div class="results-scrim"><section class="round-summary" role="dialog" aria-modal="true" aria-labelledby="result-title"><div class="result-emblem">${finished ? "✦" : "◇"}</div><span class="section-kicker">${finished ? "GAME COMPLETE" : "ROUND COMPLETE"}</span><h3 id="result-title">${title}</h3><div class="result-scores"><div><span>你</span><b>${game.position.me.score}</b></div><i>:</i><div><span>${AI.LEVELS[game.level].name}</span><b>${game.position.rival.score}</b></div></div><div class="result-breakdown">${["me", "rival"].map((p) => { const s = game.summary[p]; return `<div class="settled-player"><p><b>${p === "me" ? "你" : "对手"}</b><strong>${s.before ?? game.position[p].score - s.gain - s.bonus} → ${game.position[p].score} 分</strong><em>本轮 ${signed(s.gain + s.bonus)}</em></p><p class="settled-detail"><span>贴墙 +${s.wallPoints}</span><span>地板 −${s.floorPoints}</span>${finished ? `<span>奖励 +${s.bonus}</span>` : ""}</p></div>`; }).join("")}</div><p class="scoring-note">双方同时结算；未满的图案线留到下轮，总分最低为 0。</p>${finished ? `<button type="button" class="primary-button" data-game-restart="true">同一强度，再来一局 ↗</button>` : `<button type="button" class="primary-button" data-game-next="true">进入第 ${game.round + 1} 轮 →</button>`}<button class="result-back" type="button" data-game-home="true">返回大厅</button></section></div>`;
   }
   function renderDrawer() {
     if (!overlay) return "";
-    return `<div class="drawer-scrim"><section class="table-drawer" role="dialog" aria-modal="true" aria-label="${overlay === "log" ? "对局记录" : "玩法规则"}"><div class="drawer-heading"><h3>${overlay === "log" ? "对局记录" : "玩法规则"}</h3><button type="button" data-game-close="true" aria-label="关闭面板">×</button></div>${overlay === "log" ? `<ol class="match-history">${game.log.length ? game.log.map((line) => `<li>${esc(line)}</li>`).join("") : "<li>新对局已经准备好。</li>"}</ol>` : `<div class="quick-rules"><h4>01 选砖</h4><p>从一个圆盘或中央区，拿走全部同色花砖。取走圆盘里的一种颜色后，剩余花砖进入中央区。</p><h4>02 落砖</h4><p>一组砖只能放入一条图案线。图案线只收同色砖；对应墙行已有该颜色时不能再放。多余的砖进入地板扣分。</p><h4>03 贴墙</h4><p>公共花砖取完后，完整图案线各贴一块到墙上；横、竖相连分别得分。不完整的图案线留到下一轮。</p><h4>04 胜负</h4><p>任一玩家贴满一横行，本轮结束后结算。每条完整横行 +2，纵列 +7，同色五块 +10。总分相同时，完整横行较多者胜。</p></div>`}</section></div>`;
+    return `<div class="drawer-scrim"><section class="table-drawer" role="dialog" aria-modal="true" aria-label="${overlay === "log" ? "对局记录" : "玩法规则"}"><div class="drawer-heading"><h3>${overlay === "log" ? "对局记录" : "玩法规则"}</h3><button type="button" data-game-close="true" aria-label="关闭面板">×</button></div>${overlay === "log" ? `<ol class="match-history">${game.log.length ? game.log.map((line) => `<li>${esc(line)}</li>`).join("") : "<li>新对局已经准备好。</li>"}</ol>` : `<div class="quick-rules"><h4>01 选砖</h4><p>从一个圆盘或中央区，拿走全部同色花砖。取走圆盘里的一种颜色后，剩余花砖进入中央区。</p><h4>02 落砖</h4><p>一组砖只能放入一条图案线。图案线只收同色砖；对应墙行已有该颜色时不能再放。多余的砖进入地板扣分。</p><h4>03 贴墙</h4><p>双方在公共花砖取完后同时结算。完整图案线各贴一块到墙上，横、竖相连分别得分，再扣除地板分。总分最低为 0。不完整的图案线留到下一轮，不立即得分。顶部“待结算”为当前局面的本轮净变化，尚未入账。</p><h4>04 倒计时</h4><p>每手限时 ${game.turnSeconds || 90} 秒，出手后重新计时。超时优先执行已选的合法落点；未选好时由本地算法代走一步。返回大厅暂停计时，刷新页面继续当前计时。</p><h4>05 胜负</h4><p>任一玩家贴满一横行，本轮结束后结算。每条完整横行 +2，纵列 +7，同色五块 +10。总分相同时，完整横行较多者胜。</p></div>`}</section></div>`;
+  }
+  function renderClock() {
+    return game.phase === "playing" ? `<span class="turn-timer"><i aria-hidden="true">◷</i><time class="turn-clock" aria-label="本手剩余时间">${clockText()}</time></span><span class="turn-progress" aria-hidden="true"><i></i></span>` : '<span class="clock-settled">双方已结算</span>';
+  }
+  function clockText() {
+    const seconds = Math.ceil(G.remainingTime(game) / 1000);
+    return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  }
+  function updateClock() {
+    if (!game || location.hash !== "#match" || game.phase !== "playing") return;
+    const remaining = G.remainingTime(game), label = $(".turn-clock"), progress = $(".turn-progress i");
+    if (label) label.textContent = clockText();
+    if (progress) progress.style.width = `${Math.min(100, remaining / ((game.turnSeconds || 90) * 10))}%`;
+    $(".duel-score")?.classList.toggle("clock-urgent", remaining <= 10000);
+    if (!remaining && myTurn()) {
+      const preferred = selection && pendingRow !== undefined ? { ...selection, row: pendingRow } : null;
+      const move = E.legalMoves(game.position, "me").find(candidate => preferred && G.sameMove(candidate, preferred)) || AI.chooseMove(game.position, "me", "medium", { tokenOwner: game.tokenOwner }).move;
+      if (move) commitHumanMove(move, true);
+    }
+  }
+  function commitHumanMove(move, timedOut = false) {
+    game.lastMove = { ...move, player: "me" };
+    G.playMove(game, move);
+    if (timedOut) {
+      game.log.unshift("本手倒计时结束，已自动执行合法落砖。");
+      game.log = game.log.slice(0, 40);
+    }
+    selection = null; pendingRow = undefined; save(); render();
+  }
+  function signed(n) { return `${n >= 0 ? "+" : "−"}${Math.abs(n)}`; }
+  function renderScore(player) {
+    const mine = player === "me", board = game.position[player];
+    const score = G.roundScore(board), settled = game.phase !== "playing";
+    const gain = settled ? (game.summary?.[player]?.gain || 0) + (game.summary?.[player]?.bonus || 0) : score.gain;
+    return `<div class="duelist ${mine ? "mine" : "opponent"}" aria-label="${mine ? "你的计分" : "对手计分"}" aria-live="polite"><span class="duelist-avatar">${mine ? "你" : "机"}</span><div class="duelist-info"><b>${mine ? "你的总分" : "对手总分"}</b><small class="score-pending" title="${settled ? "本轮分数已计入总分" : `公共池取空后统一入账，当前预计总分 ${score.total}`}" data-score-pending="${player}">${settled ? "本轮" : "待结算"} <em>${signed(gain)}</em>${settled ? " · 已入账" : ""}</small></div><strong data-score-total="${player}">${board.score}<small>分</small></strong></div>`;
   }
   function render() {
     $("#resume-slot").innerHTML = game ? `<button type="button" class="resume-button" data-game-resume="true"><span><b>${game.phase === "finished" ? "查看上一局" : "继续上次对局"}</b><small>${AI.LEVELS[game.level].name} · 第 ${game.round} 轮 · ${game.position.me.score} : ${game.position.rival.score}</small></span><i>→</i></button>` : "";
     if (!game) { $("#match-content").innerHTML = ""; return; }
-    const p = game.position;
     const status = game.phase === "finished" ? "对局结束" : game.phase === "roundEnd" ? "本轮结算" : game.turn === "me" ? "轮到你了" : "对手思考中";
-    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score"><div class="duelist mine"><span class="duelist-avatar">你</span><div><b>花砖匠人</b><small>YOUR TURN TO SHINE</small></div><strong>${p.me.score}<small>分</small></strong></div><div class="duel-round"><small>ROUND ${String(game.round).padStart(2, "0")}</small><b>${status}</b><span>${AI.LEVELS[game.level].name}${game.level === "hard" ? " · 极限" : " · 经典"}</span></div><div class="duelist opponent"><strong>${p.rival.score}<small>分</small></strong><div><b>${AI.LEVELS[game.level].name}对手</b><small>${game.level === "hard" ? "GRANDMASTER" : "YOUR OPPONENT"}</small></div><span class="duelist-avatar">✦</span></div></div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    updateClock();
     if (location.hash === "#match" && game.phase === "playing" && game.turn === "rival" && !busy) runAI();
   }
   function cancelAI() {
@@ -83,8 +119,8 @@
     const previousLevel = game?.level;
     cancelAI();
     const level = replay && previousLevel ? previousLevel : document.querySelector('input[name="difficulty"]:checked').value;
-    game = G.createGame({ level, first: $("#game-first").value });
-    selection = null; pendingRow = undefined; overlay = null; expanded = false;
+    game = G.createGame({ level, first: $("#game-first").value, turnSeconds: replay && game?.turnSeconds ? game.turnSeconds : Number($("#game-seconds").value) });
+    selection = null; pendingRow = undefined; overlay = null;
     save(); location.hash = "match"; showMode(); render();
   }
   function completeAI(id, result) {
@@ -106,7 +142,7 @@
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=9");
+      } else worker = new Worker("ai-worker.js?v=10");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
@@ -126,6 +162,10 @@
     document.body.classList.toggle("in-match", matching);
     $("#play-tab").setAttribute("aria-selected", String(!helping));
     $("#helper-tab").setAttribute("aria-selected", String(helping));
+    if (game) {
+      if (matching) G.resumeClock(game); else G.pauseClock(game);
+      save();
+    }
     if (!matching && busy) cancelAI();
     window.scrollTo({ top: 0, behavior: "auto" });
   }
@@ -140,7 +180,6 @@
     if (b.dataset.gameHome) { location.hash = "play"; return; }
     if (b.dataset.gameOverlay) { overlay = b.dataset.gameOverlay; render(); return; }
     if (b.dataset.gameClose) { overlay = null; render(); return; }
-    if (b.dataset.gameInspect) { expanded = !expanded; render(); return; }
     if (b.dataset.gameRestart) { start(true); return; }
     if (b.dataset.gameNext) { G.nextRound(game); selection = null; pendingRow = undefined; save(); render(); return; }
     if (!myTurn()) return;
@@ -149,17 +188,16 @@
       const kind = b.dataset.gameSource, index = Number(b.dataset.gameIndex), color = b.dataset.gameColor;
       const count = kind === "center" ? game.position.center[color] : game.position.factories[index].filter((c) => c === color).length;
       selection = { kind, index, color, count }; pendingRow = undefined; render();
-      if (window.innerWidth < 760) $(".my-board").scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     if (selection && (b.dataset.gameRow !== undefined || b.dataset.gameDrop)) { pendingRow = b.dataset.gameDrop ? null : Number(b.dataset.gameRow); render(); return; }
     if (selection && pendingRow !== undefined && b.dataset.gameConfirm) {
-      const move = { ...selection, row: pendingRow };
-      game.lastMove = { ...move, player: "me" }; G.playMove(game, move);
-      selection = null; pendingRow = undefined; save(); render();
+      commitHumanMove({ ...selection, row: pendingRow });
     }
   });
   document.addEventListener("keydown", (event) => { if (event.key === "Escape" && location.hash === "#match") { overlay = null; selection = null; pendingRow = undefined; render(); } });
   if (game) document.querySelector(`input[name="difficulty"][value="${game.level}"]`).checked = true;
+  if (game?.turnSeconds) $("#game-seconds").value = String(game.turnSeconds);
   showMode(); render();
+  setInterval(updateClock, 250);
 })();

@@ -2,6 +2,25 @@
   "use strict";
   const E = root.AzulEngine;
   const other = (player) => player === "me" ? "rival" : "me";
+  function remainingTime(game, now = Date.now()) {
+    if (game.phase !== "playing") return 0;
+    const duration = (game.turnSeconds === 60 ? 60 : 90) * 1000;
+    return Math.max(0, Number.isFinite(game.turnDeadline) ? game.turnDeadline - now : game.turnRemainingMs ?? duration);
+  }
+  function restartClock(game, now = Date.now()) {
+    game.turnRemainingMs = null;
+    game.turnDeadline = game.phase === "playing" ? now + (game.turnSeconds === 60 ? 60 : 90) * 1000 : null;
+  }
+  function pauseClock(game, now = Date.now()) {
+    game.turnRemainingMs = game.phase === "playing" ? remainingTime(game, now) : null;
+    game.turnDeadline = null;
+  }
+  function resumeClock(game, now = Date.now()) {
+    if (game.phase !== "playing" || Number.isFinite(game.turnDeadline)) return;
+    game.turnSeconds = game.turnSeconds === 60 ? 60 : 90;
+    game.turnDeadline = now + remainingTime(game, now);
+    game.turnRemainingMs = null;
+  }
   function random(game) {
     game.rng = (game.rng + 0x6D2B79F5) >>> 0;
     let n = game.rng;
@@ -28,13 +47,15 @@
     game.position.firstPlayerToken = true;
     game.turn = game.tokenOwner;
     game.phase = "playing";
+    restartClock(game);
   }
-  function createGame({ level = "medium", first = "me", seed = Date.now() } = {}) {
+  function createGame({ level = "medium", first = "me", seed = Date.now(), turnSeconds = 90 } = {}) {
     const game = {
       version: 1, position: E.createState(2), bag: [], discard: [],
       floorTiles: { me: [], rival: [] }, rng: seed >>> 0, round: 1,
       phase: "playing", turn: first, tokenOwner: first,
       level, log: [], summary: null, winner: null, markerSlot: null,
+      turnSeconds: turnSeconds === 60 ? 60 : 90, turnDeadline: null, turnRemainingMs: null,
     };
     game.bag = shuffle(game, E.COLORS.flatMap((color) => Array(20).fill(color)));
     if (first === "random") game.turn = game.tokenOwner = random(game) < 0.5 ? "me" : "rival";
@@ -51,14 +72,20 @@
     game.log.unshift(text);
     game.log = game.log.slice(0, 40);
   }
+  function roundScore(board) {
+    const projection = E.projectBoard(board);
+    const total = Math.max(0, board.score + projection.net);
+    return { ...projection, before: board.score, total, gain: total - board.score };
+  }
   function settleRound(game) {
+    if (game.phase !== "playing") return game.summary;
     const summary = {};
     for (const player of ["me", "rival"]) {
       const board = game.position[player];
-      const projection = E.projectBoard(board);
+      const projection = roundScore(board);
       const before = board.score;
       board.wall = projection.wall;
-      board.score = Math.max(0, before + projection.net);
+      board.score = projection.total;
       board.lines.forEach((line, row) => {
         if (line.count !== row + 1) return;
         game.discard.push(...Array(row).fill(line.color));
@@ -67,26 +94,31 @@
       game.discard.push(...game.floorTiles[player]);
       game.floorTiles[player] = [];
       board.floor = 0;
-      summary[player] = { wallPoints: projection.wallPoints, floorPoints: projection.floorPoints, gain: board.score - before, bonus: 0 };
+      summary[player] = { before, total: board.score, wallPoints: projection.wallPoints, floorPoints: projection.floorPoints, gain: board.score - before, bonus: 0, placements: projection.placements };
     }
     const bonuses = { me: E.endBonuses(game.position.me.wall), rival: E.endBonuses(game.position.rival.wall) };
     game.summary = summary;
     game.markerSlot = null;
+    game.turnDeadline = null;
+    game.turnRemainingMs = null;
     if (bonuses.me.rows || bonuses.rival.rows) {
       for (const player of ["me", "rival"]) {
         summary[player].bonus = bonuses[player].points;
         game.position[player].score += bonuses[player].points;
+        summary[player].total = game.position[player].score;
       }
       const diff = game.position.me.score - game.position.rival.score;
       const rowDiff = bonuses.me.rows - bonuses.rival.rows;
       game.winner = diff ? (diff > 0 ? "me" : "rival") : rowDiff ? (rowDiff > 0 ? "me" : "rival") : "tie";
       game.phase = "finished";
-      addLog(game, "对局结束，已结算横行、纵列与同色奖励。");
+      addLog(game, `对局结束：你 ${summary.me.total} 分，人机 ${summary.rival.total} 分，已计入横行、纵列与同色奖励。`);
     } else {
       game.phase = "roundEnd";
-      addLog(game, `第${game.round}轮结算：你${summary.me.gain >= 0 ? "+" : ""}${summary.me.gain}分，人机${summary.rival.gain >= 0 ? "+" : ""}${summary.rival.gain}分。`);
+      addLog(game, `第${game.round}轮结算：你 ${beforeAfter(summary.me)}；人机 ${beforeAfter(summary.rival)}。`);
     }
+    return summary;
   }
+  function beforeAfter(score) { return `${score.before} → ${score.total} 分（贴墙 +${score.wallPoints}，地板 −${score.floorPoints}）`; }
   function playMove(game, move) {
     if (game.phase !== "playing") throw new Error("本轮已结束");
     const legal = E.legalMoves(game.position, game.turn).find((candidate) => sameMove(candidate, move));
@@ -100,6 +132,7 @@
     addLog(game, `${player === "me" ? "你" : "人机"}从${describeMove(legal)}${result.tookMarker ? "，取得先手" : ""}。`);
     game.turn = other(player);
     if (!E.sources(game.position).length) settleRound(game);
+    else restartClock(game);
     return game;
   }
   function nextRound(game) {
@@ -122,5 +155,5 @@
     }
     return counts;
   }
-  root.AzulGame = { createGame, playMove, nextRound, settleRound, inventory, describeMove, sameMove, other };
+  root.AzulGame = { createGame, playMove, nextRound, settleRound, roundScore, inventory, describeMove, sameMove, other, remainingTime, restartClock, pauseClock, resumeClock };
 })(globalThis);

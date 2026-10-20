@@ -26,6 +26,41 @@ test("非法操作被拒绝且不改变局面", () => {
   assert.equal(JSON.stringify(game), before);
 });
 
+test("每手可选90或60秒，倒计时按实际时间递减，暂停与恢复保留余额", () => {
+  for (const seconds of [90, 60]) {
+    const game = G.createGame({ seed: 24, turnSeconds: seconds });
+    G.restartClock(game, 1000);
+    assert.equal(G.remainingTime(game, 1000), seconds * 1000);
+    assert.equal(G.remainingTime(game, 4500), seconds * 1000 - 3500);
+    G.pauseClock(game, 4500);
+    assert.equal(game.turnDeadline, null);
+    assert.equal(G.remainingTime(game, 500000), seconds * 1000 - 3500);
+    G.resumeClock(game, 500000);
+    assert.equal(G.remainingTime(game, 500000), seconds * 1000 - 3500);
+    assert.equal(G.remainingTime(game, 700000), 0);
+    // 模拟刷新：保存绝对截止时间，恢复时不能获得额外时间。
+    const restored = JSON.parse(JSON.stringify(game));
+    G.resumeClock(restored, 700000);
+    assert.equal(G.remainingTime(restored, 700000), 0);
+    G.playMove(game, E.legalMoves(game.position)[0]);
+    assert.equal(game.turn, "rival");
+    assert.ok(G.remainingTime(game) > seconds * 1000 - 100);
+    G.settleRound(game);
+    assert.equal(G.remainingTime(game), 0);
+    assert.equal(game.turnDeadline, null);
+    G.nextRound(game);
+    assert.ok(G.remainingTime(game) > seconds * 1000 - 100);
+  }
+});
+
+test("旧版存档可开启默认90秒倒计时", () => {
+  const game = G.createGame();
+  delete game.turnSeconds; delete game.turnDeadline; delete game.turnRemainingMs;
+  G.resumeClock(game, 1000);
+  assert.equal(game.turnSeconds, 90);
+  assert.equal(G.remainingTime(game, 1000), 90000);
+});
+
 test("整局完成，含补袋与跨轮图案线，始终保持花砖守恒", () => {
   for (const seed of [8, 32, 91]) {
     const game = G.createGame({ seed, first: "random" });
@@ -70,6 +105,64 @@ test("终局不再发牌，计入终局奖励并按完整横行破同分", () =>
   assert.equal(game.position.me.score, 10);
   assert.equal(game.winner, "me");
   assert.throws(() => G.nextRound(game));
+});
+
+test("人机取完最后一组后双方同时计分，预览与入账一致且不会重复入账", () => {
+  const game = G.createGame({ seed: 18, first: "rival" });
+  game.position.factories = Array.from({ length: 5 }, () => []);
+  game.position.center = Object.fromEntries(E.COLORS.map(c => [c, c === "red" ? 1 : 0]));
+  game.position.firstPlayerToken = false;
+  game.position.me.score = 7;
+  game.position.me.lines[1] = { color: "blue", count: 2 };
+  game.position.rival.score = 12;
+  game.position.rival.wall[0][0] = true;
+  game.position.rival.wall[0][1] = true;
+  const move = { kind: "center", index: -1, color: "red", row: 0 };
+  const projected = G.roundScore(E.applyMove(game.position, move, "rival").state.rival);
+  assert.equal(projected.wallPoints, 3);
+  assert.equal(projected.total, 15);
+  G.playMove(game, move);
+  assert.equal(game.phase, "roundEnd");
+  assert.equal(game.position.me.score, 8);
+  assert.equal(game.position.rival.score, 15);
+  assert.equal(game.summary.rival.before, 12);
+  assert.equal(game.summary.rival.total, projected.total);
+  assert.equal(game.summary.rival.gain, projected.gain);
+  assert.equal(game.summary.rival.placements.length, 1);
+  const settled = JSON.stringify(game);
+  G.settleRound(game);
+  assert.equal(JSON.stringify(game), settled);
+  G.nextRound(game);
+  assert.equal(game.position.rival.score, 15);
+  assert.equal(game.position.rival.lines[0].count, 0);
+  game.position.rival.lines[1] = { color: "blue", count: 2 };
+  G.settleRound(game);
+  assert.equal(game.position.rival.score, 17);
+  assert.equal(game.summary.rival.before, 15);
+});
+
+test("未满图案线不得分，地板扣分及零分下限对双方使用相同算法", () => {
+  const game = G.createGame();
+  for (const player of ["me", "rival"]) {
+    const board = game.position[player];
+    board.score = 2;
+    board.lines[0] = { color: "blue", count: 1 };
+    board.lines[3] = { color: "red", count: 3 };
+    board.floor = 4;
+    const before = JSON.stringify(board), score = G.roundScore(board);
+    assert.equal(score.wallPoints, 1);
+    assert.equal(score.floorPoints, 6);
+    assert.equal(score.gain, -2);
+    assert.equal(score.total, 0);
+    assert.equal(JSON.stringify(board), before);
+  }
+  G.settleRound(game);
+  for (const player of ["me", "rival"]) {
+    assert.equal(game.position[player].score, 0);
+    assert.equal(game.summary[player].gain, -2);
+    assert.equal(game.position[player].lines[3].count, 3);
+    assert.equal(game.position[player].floor, 0);
+  }
 });
 
 test("大师轮末搜索与独立完全枚举的最优值一致", () => {

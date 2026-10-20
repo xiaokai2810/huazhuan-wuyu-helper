@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>花砖物语 · 人机对战与对局助手</title>
-  <link rel="stylesheet" href="style.css?v=9">
-  <link rel="stylesheet" href="game.css?v=9">
-  <script src="engine.js?v=9" defer></script>
-  <script src="app.js?v=9" defer></script>
-  <script src="game-engine.js?v=9" defer></script>
-  <script src="search-ai.js?v=9" defer></script>
-  <script src="ai.js?v=9" defer></script>
-  <script src="game-ui.js?v=9" defer></script>
+  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="game.css?v=10">
+  <script src="engine.js?v=10" defer></script>
+  <script src="app.js?v=10" defer></script>
+  <script src="game-engine.js?v=10" defer></script>
+  <script src="search-ai.js?v=10" defer></script>
+  <script src="ai.js?v=10" defer></script>
+  <script src="game-ui.js?v=10" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -31,15 +31,15 @@
 
     <section id="play-mode" role="tabpanel" aria-labelledby="play-tab">
       <div class="lobby-layout"><div class="match-setup panel">
-        <div class="setup-title"><span class="section-kicker">CLASSIC DUEL / 经典对局</span><h2>这一局，想挑战谁？</h2><p>双人对弈 · 经典彩色墙 · 随时继续</p></div>
+        <div class="setup-title"><span class="section-kicker">CLASSIC DUEL / 经典对局</span><h2>这一局，想挑战谁？</h2><p>本地算法对手 · 经典彩色墙 · 随时继续</p></div>
         <fieldset class="difficulty-options"><legend class="sr-only">人机强度</legend>
           <label class="difficulty-card"><input type="radio" name="difficulty" value="easy"><i class="difficulty-symbol">Ⅰ</i><span><b>入门</b><small>慢慢熟悉，每一块都有可能</small></span><em>轻松练习</em></label>
           <label class="difficulty-card"><input type="radio" name="difficulty" value="medium"><i class="difficulty-symbol">Ⅱ</i><span><b>进阶</b><small>把握相邻，算好每一步收益</small></span><em>认真较量</em></label>
           <label class="difficulty-card master"><input type="radio" name="difficulty" value="hard" checked><i class="difficulty-symbol">Ⅲ</i><span><b>宗师</b><small>深度博弈，争夺整轮主动权</small></span><em>极限强度</em></label>
         </fieldset>
-        <div class="new-match-controls"><label>首轮先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机决定</option></select></label><button type="button" id="new-match" class="primary-button">开始对局 <span>↗</span></button></div>
+        <div class="new-match-controls"><div class="match-settings"><label>每步限时 <select id="game-seconds"><option value="90">90 秒</option><option value="60">60 秒</option></select></label><label>首轮先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机决定</option></select></label></div><button type="button" id="new-match" class="primary-button">开始对局 <span>↗</span></button></div>
         <div id="resume-slot"></div>
-      </div><aside class="lobby-side"><span class="section-kicker">一眼看懂</span><h2>简单落砖，<br>细细思量。</h2><ol><li><b>选砖</b><span>从一个圆盘拿走全部同色砖。</span></li><li><b>落砖</b><span>放入一条图案线，多余的会扣分。</span></li><li><b>成墙</b><span>完整图案线贴到墙上，相邻得分。</span></li></ol><div class="lobby-tip">宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。</div></aside></div>
+      </div><aside class="lobby-side"><span class="section-kicker">一眼看懂</span><h2>简单落砖，<br>细细思量。</h2><ol><li><b>选砖</b><span>从一个圆盘拿走全部同色砖。</span></li><li><b>落砖</b><span>放入一条图案线，多余的会扣分。</span></li><li><b>成墙</b><span>完整图案线贴到墙上，相邻得分。</span></li></ol><div class="lobby-tip">宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。<br>超时自动落砖，返回大厅暂停计时。</div></aside></div>
     </section>
 
     <section id="match-screen" class="hidden" aria-label="对局桌面"><div id="match-content"></div></section>
