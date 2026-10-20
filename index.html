@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>花砖物语 · 对局助手</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="engine.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="live-dot"></span> 本地运行 · 经典彩色墙规则</div>
+        <h1>花砖物语<span>对局助手</span></h1>
+        <p>把眼前的工厂、中央区和棋盘点进来，查看这一手的推荐取砖与落点。</p>
+      </div>
+      <div class="hero-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </header>
+
+    <div class="top-controls">
+      <label class="select-control">人数
+        <select id="player-count">
+          <option value="2">2 人 · 5 个工厂</option>
+          <option value="3">3 人 · 7 个工厂</option>
+          <option value="4">4 人 · 9 个工厂</option>
+        </select>
+      </label>
+      <label class="checkbox-control"><input id="rival-toggle" type="checkbox"> 录入一位对手，考虑其下一手</label>
+      <div class="control-actions">
+        <button id="sample" type="button" class="subtle-button">填入示例</button>
+        <button id="reset" type="button" class="subtle-button">清空</button>
+      </div>
+    </div>
+
+    <main class="main-grid">
+      <div class="input-column">
+        <section class="panel" aria-labelledby="market-title">
+          <div class="section-heading">
+            <div><span class="section-kicker">01 / 公共牌面</span><h2 id="market-title">选择颜色，点入工厂</h2></div>
+            <span class="micro-note">左键填色 · 右键清空 · 键盘 1–5 / 0</span>
+          </div>
+          <div id="palette" class="palette" aria-label="选择花砖颜色"></div>
+          <div id="factories" class="factory-grid"></div>
+          <div class="center-area">
+            <div class="center-title"><div><span class="center-icon">✦</span> 中央区</div><label><input id="marker-toggle" type="checkbox" checked> 先手标记还在</label></div>
+            <div id="center-counts" class="center-counts"></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="board-title">
+          <div class="section-heading">
+            <div><span class="section-kicker">02 / 我的棋盘</span><h2 id="board-title">图案线与花砖墙</h2></div>
+            <span class="micro-note">选颜色后点图案线格数；点墙格标记已贴</span>
+          </div>
+          <div id="my-board" class="board-slot"></div>
+        </section>
+
+        <section id="rival-section" class="panel hidden" aria-labelledby="rival-title">
+          <div class="section-heading">
+            <div><span class="section-kicker">03 / 可选</span><h2 id="rival-title">对手棋盘</h2></div>
+            <span class="micro-note">多人局可录入最需要防的一位</span>
+          </div>
+          <div id="rival-board" class="board-slot"></div>
+        </section>
+      </div>
+
+      <aside class="result-column">
+        <section class="panel analysis-panel" aria-labelledby="analysis-title">
+          <div class="section-heading"><div><span class="section-kicker">即时分析</span><h2 id="analysis-title">推荐出手</h2></div><span class="analysis-icon">↗</span></div>
+          <div id="analysis" aria-live="polite"></div>
+        </section>
+        <section class="note-panel">
+          <div class="note-title">怎么算的？</div>
+          <p>按经典《花砖物语》规则枚举所有合法拿砖与放置方式，计算本轮成墙得分、地板扣分、未完成图案线的进度；录入对手时再估计其最佳下一手。排名是局面启发式建议，并非保证必胜。</p>
+          <p>砖块只在这台设备上处理，页面不读取微信、不连接游戏服务器。录入内容自动保存在当前浏览器。</p>
+        </section>
+      </aside>
+    </main>
+    <footer>依据原版 Azul 彩色墙玩法制作 · 如小程序使用变体规则，请以游戏内规则为准</footer>
+  </div>
+</body>
+</html>
