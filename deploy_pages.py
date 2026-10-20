@@ -28,6 +28,7 @@ FILES = (
     "game-engine.js",
     "ai.js",
     "ai-worker.js",
+    "worker-handler.js",
     "game-ui.js",
     "game.css",
     "game.test.js",

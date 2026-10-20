@@ -3,7 +3,7 @@
   const E = rootEngine(), G = globalThis.AzulGame, AI = globalThis.AzulAI;
   const $ = (selector) => document.querySelector(selector);
   const KEY = "azul-match-v1";
-  let game = load(), selection = null, busy = false, worker = null, requestId = 0;
+  let game = load(), selection = null, busy = false, worker = null, requestId = 0, watchdog = null, fallbackPending = false;
   function rootEngine() { return globalThis.AzulEngine; }
   function load() {
     try {
@@ -61,6 +61,7 @@
   }
   function cancelAI() {
     requestId++;
+    clearTimeout(watchdog); fallbackPending = false;
     worker?.terminate(); worker = null; busy = false;
   }
   function start() {
@@ -72,6 +73,7 @@
   }
   function completeAI(id, result) {
     if (id !== requestId || !game || game.turn !== "rival" || game.phase !== "playing") return;
+    clearTimeout(watchdog); fallbackPending = false;
     worker?.terminate(); worker = null; busy = false;
     const legal = E.legalMoves(game.position, "rival");
     const move = legal.find((candidate) => result?.move && G.sameMove(candidate, result.move)) || AI.chooseMove(game.position, "rival", "medium", { tokenOwner: game.tokenOwner }).move;
@@ -81,6 +83,7 @@
   function runAI() {
     busy = true;
     const id = ++requestId;
+    watchdog = setTimeout(() => fallback(id), 10000);
     // Worker 内只接收公开棋盘，不传牌袋或随机数种子。
     try {
       const inline = document.querySelector("#ai-worker-source");
@@ -88,7 +91,7 @@
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url);
         URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=3");
+      } else worker = new Worker("ai-worker.js?v=4");
       worker.onmessage = (event) => {
         if (event.data.error) fallback(id);
         else completeAI(id, event.data.result);
@@ -100,6 +103,8 @@
     if (label) label.innerHTML = `<span class="thinking-dot"></span>${AI.LEVELS[game.level].name}对手正在思考`;
   }
   function fallback(id) {
+    if (id !== requestId || !busy || fallbackPending) return;
+    fallbackPending = true; clearTimeout(watchdog);
     worker?.terminate(); worker = null;
     setTimeout(() => {
       if (id !== requestId || !game) return;

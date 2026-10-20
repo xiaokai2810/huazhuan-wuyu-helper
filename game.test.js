@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { Worker } from "node:worker_threads";
+import { readFile } from "node:fs/promises";
 import "./engine.js";
 import "./game-engine.js";
 import "./ai.js";
@@ -95,4 +97,17 @@ test("三个等级都只返回合法走法，大师遵守思考预算", () => {
     assert.ok(E.legalMoves(game.position).some((m) => G.sameMove(m, result.move)));
     assert.ok(result.elapsed < 800);
   }
+});
+
+test("发布的单文件 Worker 独立运行并返回合法落子", async () => {
+  const source = await readFile(new URL("./ai-worker.js", import.meta.url), "utf8");
+  const worker = new Worker('const {parentPort}=require("node:worker_threads"); globalThis.self=globalThis; self.postMessage=x=>parentPort.postMessage(x);\n' + source + '\nparentPort.on("message",data=>self.onmessage({data}));', { eval: true });
+  try {
+    const game = G.createGame({ seed: 45 });
+    const response = new Promise((resolve, reject) => { worker.once("message", resolve); worker.once("error", reject); });
+    worker.postMessage({ id: 7, position: game.position, player: "rival", level: "medium", tokenOwner: "me" });
+    const data = await response;
+    assert.equal(data.id, 7);
+    assert.ok(E.legalMoves(game.position, "rival").some((move) => G.sameMove(move, data.result.move)));
+  } finally { await worker.terminate(); }
 });
