@@ -1,0 +1,113 @@
+/* 青花陶瓷主题。尺寸与布局仍由 game.css 管理。 */
+:root{--ink-blue:#244d6b;--ceramic:#f6f2e4;--brass:#c5a466}
+.azul-art-definitions{position:absolute;overflow:hidden;pointer-events:none}
+.tile{padding:0!important;border:0!important;border-radius:18%;background:none!important;position:relative;overflow:visible;box-shadow:0 2px 0 #11344b77,0 3px 4px #15334633;isolation:isolate}
+.tile:after{display:none!important}
+.tile-art{display:block;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 .5px 0 #fffa)}
+.tile.empty{opacity:1;box-shadow:inset 0 1px 2px #25445218}
+.tile.ghost{opacity:.65;outline:2px dashed #bf9146;outline-offset:0}
+.tile.ghost .tile-art{filter:drop-shadow(0 0 2px #e4b75a)}
+.hero{background:radial-gradient(ellipse at 80% 20%,#2b6580aa,transparent 60%),linear-gradient(115deg,#143448,#235d70);border:1px solid #a4b8b5}
+.hero:after{border:1px solid #c7b17a44;inset:10px;width:auto;height:auto;border-radius:17px}
+.hero-mark{transform:rotate(-12deg);filter:drop-shadow(0 9px 6px #0d263755)}
+.hero-mark i{display:block;background:none!important;border:0!important;box-shadow:none!important;border-radius:0}
+.hero-mark .tile{width:100%;height:100%;border-radius:14%}
+.hero-mark i:nth-child(2){transform:translateY(-5px)}
+.hero-mark i:nth-child(6){transform:translateX(4px)}
+.hero-mark i:nth-child(7){transform:translate(-4px,5px)}
+.difficulty-symbol{background:none!important;border-radius:0;transform:rotate(-6deg);width:43px;height:43px}
+.difficulty-symbol .tile{width:100%;height:100%}
+.difficulty-card.master .difficulty-symbol{transform:rotate(7deg)}
+.primary-button{background:linear-gradient(#3b748b,#265972);border:1px solid #1a4c66;box-shadow:inset 0 1px 0 #ffffff3d,0 3px 0 #143e5170,0 5px 12px #0f344326}
+.primary-button:hover:not(:disabled){background:linear-gradient(#4a8299,#2e637c)}
+.in-match{background:radial-gradient(ellipse at 50% 0,#37617980,transparent 65%),repeating-linear-gradient(91deg,#122d3d00 0 26px,#8caaac08 27px,#122d3d00 29px),linear-gradient(110deg,#18384c,#234956 50%,#16374a)}
+.in-match:before{background-image:radial-gradient(#edf4e414 .6px,transparent .9px);background-size:5px 5px;opacity:.5}
+.table-brand{display:flex;align-items:center;gap:7px;color:#f4e9cb;text-shadow:0 2px 2px #0c263f88}
+.table-brand .rosette-art{width:24px;height:24px;flex-shrink:0;filter:drop-shadow(0 1px 1px #071e3744)}
+.duel-score{border-color:#a8b9b544;background:linear-gradient(115deg,#0e2a3e99,#24475799);box-shadow:inset 0 1px 0 #eff3de0c,0 3px 12px #10273626}
+.duelist-info>b{color:#f1ebd7}
+.duelist strong{font-family:Georgia,"Songti SC",serif;font-weight:500;color:#f4dfae;text-shadow:0 2px 0 #10283d}
+.duelist .duelist-avatar{background:radial-gradient(circle at 35% 25%,#f6e3ae,#bba16c);border:2px solid #e6cf98;color:#3f6173;box-shadow:0 2px 0 #10293d66,inset 0 0 0 2px #496b7d55;font-weight:700}
+.duel-round>b{color:#f0eddb}
+.duelist-info .score-pending{color:#b6c8c7}
+.score-pending em{color:#f4cb7e}
+.table-back,.table-tools button{border-color:#d8d0ac36;background:#dce8dd09;color:#e2e4d4;box-shadow:inset 0 1px 0 #ffffff08}
+.battle-board{background:linear-gradient(110deg,#fffbee,#f0eddd);border:1px solid #afc2c5;border-radius:13px;box-shadow:inset 0 0 0 3px #fff9e8,inset 0 0 0 4px #96acb966,0 4px 0 #102e3c66,0 8px 20px #0a293a40;color:#2d506a}
+.battle-board:before{inset:7px;border-color:#a4bac288;border-radius:7px}
+.battle-board.active{border-color:#d8ba72;box-shadow:inset 0 0 0 3px #fff6da,inset 0 0 0 4px #b6a06a88,0 0 0 1px #e6c58066,0 4px 0 #102e3c66,0 8px 20px #0a293a40}
+.ai-board{background:linear-gradient(125deg,#e9eee6,#d9e3df)}
+.board-corners{position:absolute;inset:0;pointer-events:none;z-index:1;border-radius:inherit;overflow:hidden}
+.board-corner{position:absolute;width:27px;height:27px;opacity:.6;pointer-events:none}
+.board-corner.nw{top:2px;left:2px}.board-corner.ne{top:2px;right:2px;transform:rotate(90deg)}
+.board-corner.se{bottom:2px;right:2px;transform:rotate(180deg)}.board-corner.sw{bottom:2px;left:2px;transform:rotate(270deg)}
+.battle-board-header{position:relative;z-index:2}
+.battle-board-header h3{font-family:"Songti SC","Noto Serif SC",serif;font-weight:750;color:#2e5870}
+.board-avatar{background:#e4ebdf;border-color:#9aafb3;color:#416b80;box-shadow:inset 0 1px 0 #fffff0}
+.board-round{color:#6a807c}
+.battle-board-legend{color:#778d91}
+.battle-board-legend span:last-child:before,.battle-board-legend span:last-child:after{content:"·";margin:0 6px;color:#af9f78}
+.battle-line{border-radius:5px}
+.battle-line.legal{background:#e0ecdf;border-color:#9db9ae}
+.battle-line.legal:hover{background:#d3e4d5;border-color:#5d988a}
+.battle-line.planned{border-color:#b38b43;background:#f2e2b8;box-shadow:inset 0 0 0 1px #eacb7a,0 1px 3px #9b7c3430}
+.line-number{color:#8c9da1}
+.row-hint{color:#467f75;font-weight:700}
+.battle-wall-cell{border-radius:4px;background:#c7d1ca44}
+.battle-wall-cell .tile{opacity:.38;filter:saturate(.8);box-shadow:none}
+.battle-wall-cell.filled{background:transparent}
+.battle-wall-cell.filled .tile{opacity:1;filter:none;box-shadow:0 2px 0 #425f6a99,0 2px 4px #2a4a6555;transform:translateY(-1px)}
+.battle-wall-cell.pending-wall{outline-color:#b98d41;background:#f6e8bc}
+.battle-wall-cell.pending-wall .tile{opacity:.8;filter:none}
+.battle-wall-cell.target{outline-color:#7a9b91;background:#d5e6d5}
+.battle-wall-cell.planned-target{outline-color:#c2933c;box-shadow:0 0 8px #d6af5c88}
+.floor-heading{color:#708181}.floor-heading b{color:#a0754e}
+.battle-floor{border-top-color:#b9c6c080}
+.floor-slot small{color:#9a8872}
+.floor-slot .tile.empty{opacity:.78}
+.floor-heading .floor-drop{background:#e9e9d9;color:#7e8f8b;border-color:#c1c9b5;box-shadow:inset 0 1px 0 #fff9}
+.floor-heading .floor-drop:enabled{background:#f0dfb6;color:#8d652d;border-color:#b99e62}
+.game-factory{position:relative;border:0;background:none!important;box-shadow:none!important;border-radius:50%;isolation:isolate}
+.plate-art{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);z-index:-1;pointer-events:none;filter:drop-shadow(0 3px 0 #0e2f4380) drop-shadow(0 5px 5px #082b3a40)}
+.game-factory-tiles{position:relative;z-index:1}
+.game-factory.plate-selected{outline:2px solid #eed49a;outline-offset:2px;transform:translateY(-2px)}
+.game-factory.plate-selected .plate-art{filter:drop-shadow(0 0 5px #e8c87caa)}
+.game-tile.chosen .tile{outline:2px solid #fff2b2;outline-offset:1px;box-shadow:0 0 0 3px #d3a74c88,0 3px 3px #113a4d55}
+.game-tile:not(:disabled):hover .tile{transform:translateY(-3px) rotate(-3deg)}
+.factory-index{border-color:#708c9d;background:#e9e6cf;color:#4b6e83;box-shadow:0 1px 1px #102b3b33;min-width:19px;text-align:center}
+.market-heading{color:#f0e6ca;font-weight:600;letter-spacing:.05em}
+.market-heading small{color:#a7bdbc;font-weight:400;letter-spacing:0}
+.game-center{position:relative;background:linear-gradient(120deg,#12324799,#1d455599);border-color:#91aeb15c;box-shadow:inset 0 1px 4px #061f353d,0 1px 0 #fff2}
+.center-heading{color:#d5dfd6}
+.token-badge{color:#e2c588}
+.center-pick{gap:6px}.center-pick b{font-family:Georgia,serif;font-size:13px;color:#ecdfbc}
+.center-pick:disabled{opacity:.28}
+.center-pick.chosen{outline:1px solid #e7c77e;background:#dbc47b24;box-shadow:0 0 0 2px #d6bd7333}
+.latest-move{color:#abc2bd}.latest-move span{color:#e0c68b}
+.action-dock{background:linear-gradient(110deg,#fffaeb,#eae8d8);border-color:#bfbd9c;box-shadow:inset 0 1px 0 #fff,0 4px 0 #082b3c66,0 7px 22px #0928394d;color:#365b6a}
+.dock-copy>span{color:#81918b}.dock-symbol{color:#b7964e}
+.dock-cancel{background:#dfe5dc;color:#607c85}
+.confirm-move{border-radius:8px}
+.round-summary,.table-drawer{border:1px solid #97aeb5;background:linear-gradient(125deg,#fffbee,#efeada);box-shadow:inset 0 0 0 4px #fdf7e5,inset 0 0 0 5px #9bafb066,0 20px 80px #051d3655}
+.round-summary h3,.drawer-heading h3{color:#315b73}.result-emblem{color:#b99a58}
+.results-scrim,.drawer-scrim{background:#0b293ebd}
+@media(max-width:760px){
+  .hero-mark{opacity:.86;right:-9px;grid-template-columns:repeat(3,32px);gap:5px;top:66px}
+  .difficulty-symbol{width:38px;height:38px}
+  .table-brand{gap:4px;font-size:16px;letter-spacing:.08em}
+  .table-brand .rosette-art{width:18px;height:18px}
+  .battle-board{border-radius:10px}
+  .battle-board:before{inset:5px;border-radius:6px}
+  .board-corner{width:20px;height:20px;opacity:.5}
+  .battle-wall-cell .tile{opacity:.4}
+  .battle-board-header h3{font-size:11px}
+  .ai-board .battle-board-header h3{font-size:10px}
+  .ai-board .board-corner{width:17px;height:17px}
+  .battle-wall-cell.filled .tile{box-shadow:0 1.5px 0 #46627899,0 2px 2px #29485940}
+  .center-pick{gap:4px}.center-pick b{font-size:11px}
+  .action-dock{border-radius:9px}
+  .game-factories{padding-bottom:8px}
+  .game-factory.plate-selected{transform:translateY(-1px)}
+}
+@media(prefers-reduced-motion:reduce){.game-factory,.game-tile .tile{transform:none!important}}
+.marker-tile{border-radius:50%!important;background:radial-gradient(circle at 32% 25%,#ffedb1,#c6a25e);border:1px solid #a2874e;box-shadow:inset 0 0 0 2px #e7cf91,0 2px 0 #49616d66;color:#725421;font-weight:700}
+.battle-wall-cell:not(.filled):not(.pending-wall) .tile{opacity:.5}

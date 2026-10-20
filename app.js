@@ -19,7 +19,7 @@
   }
 
   function tile(color) {
-    return `<span class="tile ${color || "empty"}" aria-hidden="true"></span>`;
+    return globalThis.AzulArt.render(color);
   }
 
   function renderPalette() {

@@ -32,6 +32,8 @@ FILES = (
     "worker-handler.js",
     "game-ui.js",
     "game.css",
+    "ceramic.css",
+    "tile-art.js",
     "game.test.js",
     "package.json",
     "ai-benchmark.js",
@@ -91,7 +93,7 @@ def main():
         "tree": [{"path": name, "mode": "100644", "type": "blob", "content": (ROOT / name).read_text(encoding="utf-8")} for name in FILES],
     })
     _, new_commit = request("POST", f"{repo_path}/git/commits", {
-        "message": "Add turn timers, visible scoring, and a refined single-screen mobile match",
+        "message": "Add patterned ceramic tiles, porcelain plates, and decorative board frames",
         "tree": tree["sha"], "parents": [parent],
     })
     request("PATCH", f"{repo_path}/git/refs/heads/{quote(branch)}", {"sha": new_commit["sha"], "force": False})

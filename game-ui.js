@@ -14,7 +14,7 @@
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(game)); } catch (_) { /* 继续本局 */ } }
   function esc(text) { return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-  function tile(color, ghost = false) { return `<span class="tile ${color || "empty"} ${ghost ? "ghost" : ""}" aria-hidden="true"></span>`; }
+  function tile(color, ghost = false) { return globalThis.AzulArt.render(color, ghost); }
   function myTurn() { return game?.phase === "playing" && game.turn === "me" && !busy; }
   function isSelected(kind, index, color) { return selection && selection.kind === kind && selection.index === index && selection.color === color; }
   function preview() {
@@ -25,7 +25,7 @@
   }
   function renderMarket() {
     const p = game.position;
-    const factories = p.factories.map((factory, index) => `<div class="game-factory ${selection?.kind === "factory" && selection.index === index ? "plate-selected" : ""}"><span class="factory-index">${String(index + 1).padStart(2, "0")}</span><div class="game-factory-tiles">${factory.map((color) => `<button type="button" class="game-tile ${color ? "" : "void"} ${isSelected("factory", index, color) ? "chosen" : ""}" data-game-source="factory" data-game-index="${index}" data-game-color="${color || ""}" ${!myTurn() || !color ? "disabled" : ""} aria-label="从第${index + 1}工厂选择${color ? E.COLOR_NAMES[color] : "空"}砖">${tile(color)}</button>`).join("")}</div></div>`).join("");
+    const factories = p.factories.map((factory, index) => `<div class="game-factory ${selection?.kind === "factory" && selection.index === index ? "plate-selected" : ""}">${globalThis.AzulArt.plate()}<span class="factory-index">${String(index + 1).padStart(2, "0")}</span><div class="game-factory-tiles">${factory.map((color) => `<button type="button" class="game-tile ${color ? "" : "void"} ${isSelected("factory", index, color) ? "chosen" : ""}" data-game-source="factory" data-game-index="${index}" data-game-color="${color || ""}" ${!myTurn() || !color ? "disabled" : ""} aria-label="从第${index + 1}工厂选择${color ? E.COLOR_NAMES[color] : "空"}砖">${tile(color)}</button>`).join("")}</div></div>`).join("");
     const center = E.COLORS.map((color) => `<button type="button" class="center-pick ${isSelected("center", -1, color) ? "chosen" : ""}" data-game-source="center" data-game-index="-1" data-game-color="${color}" ${!myTurn() || !p.center[color] ? "disabled" : ""} aria-label="从中央区选择${E.COLOR_NAMES[color]}砖${p.center[color]}块">${tile(color)}<b>${p.center[color]}</b></button>`).join("");
     return `<section class="game-market" aria-label="公共牌面"><div class="market-heading"><span>公共圆盘</span><small>牌袋 ${game.bag.length} · 弃砖 ${game.discard.length}</small></div><div class="game-factories">${factories}</div><div class="game-center"><div class="center-heading"><span>中央区</span><i class="token-badge">${p.firstPlayerToken ? "① 首位取砖者先手" : `① 下轮${game.tokenOwner === "me" ? "你" : "对手"}先手`}</i></div><div class="center-colors">${center}</div></div><div class="latest-move"><span>上一步</span>${esc(game.log[0] || "花砖已就绪，选一组心仪的颜色。")}</div></section>`;
   }
@@ -49,7 +49,7 @@
     const oldCount = b.floor;
     if (plan) { if (plan.tookMarker) floor.splice(oldCount, 0, "marker"); floor.push(...Array(plan.overflow).fill(selection.color)); }
     const floorHtml = E.FLOOR_COSTS.map((cost, i) => `<span class="floor-slot ${plan && i >= oldCount && floor[i] ? "floor-preview" : ""}">${floor[i] === "marker" ? '<span class="marker-tile">1</span>' : tile(floor[i], Boolean(plan && i >= oldCount && floor[i]))}<small>−${cost}</small></span>`).join("");
-    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${mine ? "你的棋盘" : "对手棋盘"}"><div class="battle-board-header"><div><i class="board-avatar">${mine ? "你" : "机"}</i><h3>${mine ? "你的花砖墙" : `${AI.LEVELS[game.level].name}的花砖墙`}</h3></div><span class="board-round" title="已完成的图案线在公共池取空后统一贴墙计分">贴墙 +${tally.wallPoints} · 地板 −${tally.floorPoints}</span></div><div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor"><div class="floor-heading">${mine ? `<button class="floor-drop ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"} aria-label="全部放入地板">地板 ↘</button>` : "<span>地板线</span>"}<b>−${E.floorPenalty(b.floor)} 分</b></div><div class="floor-slots">${floorHtml}</div></div></div></section>`;
+    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${mine ? "你的棋盘" : "对手棋盘"}">${globalThis.AzulArt.frame()}<div class="battle-board-header"><div><i class="board-avatar">${mine ? "你" : "机"}</i><h3>${mine ? "你的花砖墙" : `${AI.LEVELS[game.level].name}的花砖墙`}</h3></div><span class="board-round" title="已完成的图案线在公共池取空后统一贴墙计分">贴墙 +${tally.wallPoints} · 地板 −${tally.floorPoints}</span></div><div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor"><div class="floor-heading">${mine ? `<button class="floor-drop ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"} aria-label="全部放入地板">地板 ↘</button>` : "<span>地板线</span>"}<b>−${E.floorPenalty(b.floor)} 分</b></div><div class="floor-slots">${floorHtml}</div></div></div></section>`;
   }
   function renderDock() {
     if (game.phase !== "playing") return "";
@@ -107,7 +107,7 @@
     $("#resume-slot").innerHTML = game ? `<button type="button" class="resume-button" data-game-resume="true"><span><b>${game.phase === "finished" ? "查看上一局" : "继续上次对局"}</b><small>${AI.LEVELS[game.level].name} · 第 ${game.round} 轮 · ${game.position.me.score} : ${game.position.rival.score}</small></span><i>→</i></button>` : "";
     if (!game) { $("#match-content").innerHTML = ""; return; }
     const status = game.phase === "finished" ? "对局结束" : game.phase === "roundEnd" ? "本轮结算" : game.turn === "me" ? "轮到你了" : "对手思考中";
-    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">${globalThis.AzulArt.rosette()}花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
     updateClock();
     if (location.hash === "#match" && game.phase === "playing" && game.turn === "rival" && !busy) runAI();
   }
@@ -142,7 +142,7 @@
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=10");
+      } else worker = new Worker("ai-worker.js?v=11");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
