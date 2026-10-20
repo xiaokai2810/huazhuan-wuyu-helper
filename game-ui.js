@@ -106,7 +106,7 @@
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=8");
+      } else worker = new Worker("ai-worker.js?v=9");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
