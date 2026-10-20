@@ -263,3 +263,64 @@ test("发布的单文件 Worker 独立运行并返回合法落子", async () => 
     assert.ok(E.legalMoves(game.position, "rival").some((move) => G.sameMove(move, data.result.move)));
   } finally { await worker.terminate(); }
 });
+
+test("满墙竞速不会因完成一横行结束，也不按经典终局奖励结算", () => {
+  const game = G.createGame({ mode: "race", seed: 62 });
+  assert.equal(game.opponent, "local");
+  game.position.me.wall[0] = Array(5).fill(true);
+  game.position.me.score = 8;
+  G.settleRound(game);
+  assert.equal(game.phase, "roundEnd");
+  assert.equal(game.winner, null);
+  assert.equal(game.position.me.score, 8);
+  assert.equal(game.summary.me.bonus, 0);
+  G.nextRound(game);
+  assert.equal(game.phase, "playing");
+  assert.equal(G.wallCount(game.position.me), 5);
+});
+
+test("两位玩家均可在补齐最后图案线时立即获胜，积分和剩余公共砖不影响结果", () => {
+  for (const player of ["me", "rival"]) {
+    const game = G.createGame({ mode: "race", first: player, seed: 63 });
+    game.discard = []; game.floorTiles = { me: [], rival: [] };
+    game.position = E.createState(2);
+    game.position.factories = [["white"], ["blue"], [], [], []];
+    game.position.firstPlayerToken = false;
+    game.position[player].wall = Array.from({ length: 5 }, () => Array(5).fill(true));
+    game.position[player].wall[4][3] = false;
+    game.position[player].lines[4] = { color: "white", count: 4 };
+    game.position[G.other(player)].score = 1000;
+    // 从牌袋扣除测试牌面上实际使用的砖，保留完整100块库存。
+    game.bag = [];
+    const used = G.inventory(game);
+    game.bag = E.COLORS.flatMap(c => Array(20 - used[c]).fill(c));
+    conserve(game);
+    G.playMove(game, { kind: "factory", index: 0, color: "white", row: 4 });
+    assert.equal(game.phase, "finished");
+    assert.equal(game.winner, player);
+    assert.equal(G.wallCount(game.position[player]), 25);
+    assert.equal(game.position[player].lines[4].count, 0);
+    assert.ok(game.position[G.other(player)].score > game.position[player].score);
+    assert.ok(E.sources(game.position).length > 0);
+    assert.throws(() => G.nextRound(game));
+    conserve(game);
+  }
+});
+
+test("满墙竞速不限轮次，连续120轮可正常回收、发牌且库存守恒", () => {
+  const game = G.createGame({ mode: "race", seed: 77 });
+  for (let round = 1; round <= 120; round++) {
+    while (game.phase === "playing") {
+      const move = E.legalMoves(game.position, game.turn).find(m => m.row === null);
+      assert.ok(move);
+      G.playMove(game, move);
+    }
+    assert.equal(game.phase, "roundEnd");
+    assert.equal(game.winner, null);
+    conserve(game);
+    G.nextRound(game);
+    assert.equal(game.round, round + 1);
+  }
+  assert.equal(game.phase, "playing");
+  assert.equal(game.round, 121);
+});

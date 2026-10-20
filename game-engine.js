@@ -49,13 +49,14 @@
     game.phase = "playing";
     restartClock(game);
   }
-  function createGame({ level = "medium", first = "me", seed = Date.now(), turnSeconds = 90 } = {}) {
+  function createGame({ level = "medium", first = "me", seed = Date.now(), turnSeconds = 90, mode = "standard", opponent = mode === "race" ? "local" : "ai" } = {}) {
     const game = {
       version: 1, position: E.createState(2), bag: [], discard: [],
       floorTiles: { me: [], rival: [] }, rng: seed >>> 0, round: 1,
       phase: "playing", turn: first, tokenOwner: first,
       level, log: [], summary: null, winner: null, markerSlot: null,
       turnSeconds: turnSeconds === 60 ? 60 : 90, turnDeadline: null, turnRemainingMs: null,
+      mode: mode === "race" ? "race" : "standard", opponent: opponent === "local" ? "local" : "ai", raceWinner: null,
     };
     game.bag = shuffle(game, E.COLORS.flatMap((color) => Array(20).fill(color)));
     if (first === "random") game.turn = game.tokenOwner = random(game) < 0.5 ? "me" : "rival";
@@ -77,6 +78,8 @@
     const total = Math.max(0, board.score + projection.net);
     return { ...projection, before: board.score, total, gain: total - board.score };
   }
+  function wallCount(board) { return board.wall.flat().filter(Boolean).length; }
+  function playerName(game, player) { return game.opponent === "local" ? (player === "me" ? "玩家 1" : "玩家 2") : player === "me" ? "你" : "人机"; }
   function settleRound(game) {
     if (game.phase !== "playing") return game.summary;
     const summary = {};
@@ -101,20 +104,22 @@
     game.markerSlot = null;
     game.turnDeadline = null;
     game.turnRemainingMs = null;
-    if (bonuses.me.rows || bonuses.rival.rows) {
+    const race = game.mode === "race";
+    const filled = { me: wallCount(game.position.me), rival: wallCount(game.position.rival) };
+    if (race ? filled.me === 25 || filled.rival === 25 : bonuses.me.rows || bonuses.rival.rows) {
       for (const player of ["me", "rival"]) {
-        summary[player].bonus = bonuses[player].points;
-        game.position[player].score += bonuses[player].points;
+        summary[player].bonus = race ? 0 : bonuses[player].points;
+        game.position[player].score += summary[player].bonus;
         summary[player].total = game.position[player].score;
       }
       const diff = game.position.me.score - game.position.rival.score;
       const rowDiff = bonuses.me.rows - bonuses.rival.rows;
-      game.winner = diff ? (diff > 0 ? "me" : "rival") : rowDiff ? (rowDiff > 0 ? "me" : "rival") : "tie";
+      game.winner = race ? (game.raceWinner || (filled.me === 25 && filled.rival === 25 ? "tie" : filled.me === 25 ? "me" : "rival")) : diff ? (diff > 0 ? "me" : "rival") : rowDiff ? (rowDiff > 0 ? "me" : "rival") : "tie";
       game.phase = "finished";
-      addLog(game, `对局结束：你 ${summary.me.total} 分，人机 ${summary.rival.total} 分，已计入横行、纵列与同色奖励。`);
+      addLog(game, race ? `${game.winner === "tie" ? "双方" : playerName(game, game.winner)}完成 25 格花砖墙，满墙竞速结束。` : `对局结束：你 ${summary.me.total} 分，人机 ${summary.rival.total} 分，已计入横行、纵列与同色奖励。`);
     } else {
       game.phase = "roundEnd";
-      addLog(game, `第${game.round}轮结算：你 ${beforeAfter(summary.me)}；人机 ${beforeAfter(summary.rival)}。`);
+      addLog(game, race ? `第${game.round}轮贴墙：${playerName(game, "me")} ${filled.me}/25 格；${playerName(game, "rival")} ${filled.rival}/25 格，继续竞速。` : `第${game.round}轮结算：你 ${beforeAfter(summary.me)}；人机 ${beforeAfter(summary.rival)}。`);
     }
     return summary;
   }
@@ -129,9 +134,12 @@
     game.position = result.state;
     if (result.tookMarker) { game.tokenOwner = player; game.markerSlot = markerSlot; }
     game.floorTiles[player].push(...Array(result.overflow).fill(legal.color));
-    addLog(game, `${player === "me" ? "你" : "人机"}从${describeMove(legal)}${result.tookMarker ? "，取得先手" : ""}。`);
+    addLog(game, `${playerName(game, player)}从${describeMove(legal)}${result.tookMarker ? "，取得先手" : ""}。`);
     game.turn = other(player);
-    if (!E.sources(game.position).length) settleRound(game);
+    if (game.mode === "race" && E.projectBoard(game.position[player]).wall.flat().every(Boolean)) {
+      game.raceWinner = player;
+      settleRound(game);
+    } else if (!E.sources(game.position).length) settleRound(game);
     else restartClock(game);
     return game;
   }
@@ -155,5 +163,5 @@
     }
     return counts;
   }
-  root.AzulGame = { createGame, playMove, nextRound, settleRound, roundScore, inventory, describeMove, sameMove, other, remainingTime, restartClock, pauseClock, resumeClock };
+  root.AzulGame = { createGame, playMove, nextRound, settleRound, roundScore, wallCount, playerName, inventory, describeMove, sameMove, other, remainingTime, restartClock, pauseClock, resumeClock };
 })(globalThis);

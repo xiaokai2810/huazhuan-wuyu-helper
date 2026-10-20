@@ -202,119 +202,230 @@ html{background:#f4f3ed}body{background:radial-gradient(ellipse at 80% 0,#e7eee6
 
 </style>
   <style>
-/* 青花陶瓷主题。尺寸与布局仍由 game.css 管理。 */
-:root{--ink-blue:#244d6b;--ceramic:#f6f2e4;--brass:#c5a466}
+/* 根据用户提供的对局截图重绘：蓝色桌面、上下棋盘、2–1–2 圆盘。 */
+:root{--ink-blue:#285575;--ceramic:#f4f5f2;--board-tile:clamp(23px,2.1vw,30px);--brick-gap:2px;--pool-tile:23px;--plate-size:68px;--floor-tile:22px}
 .azul-art-definitions{position:absolute;overflow:hidden;pointer-events:none}
-.tile{padding:0!important;border:0!important;border-radius:18%;background:none!important;position:relative;overflow:visible;box-shadow:0 2px 0 #11344b77,0 3px 4px #15334633;isolation:isolate}
+.tile{padding:0!important;border:0!important;border-radius:12%;background:none!important;position:relative;overflow:visible;box-shadow:0 1px 1px #103d4d66;isolation:isolate}
 .tile:after{display:none!important}
-.tile-art{display:block;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 .5px 0 #fffa)}
-.tile.empty{opacity:1;box-shadow:inset 0 1px 2px #25445218}
-.tile.ghost{opacity:.65;outline:2px dashed #bf9146;outline-offset:0}
-.tile.ghost .tile-art{filter:drop-shadow(0 0 2px #e4b75a)}
-.hero{background:radial-gradient(ellipse at 80% 20%,#2b6580aa,transparent 60%),linear-gradient(115deg,#143448,#235d70);border:1px solid #a4b8b5}
-.hero:after{border:1px solid #c7b17a44;inset:10px;width:auto;height:auto;border-radius:17px}
-.hero-mark{transform:rotate(-12deg);filter:drop-shadow(0 9px 6px #0d263755)}
+.tile-art{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
+.tile.empty{opacity:1;box-shadow:none}
+.tile.ghost{opacity:.75;outline:2px dashed #e8ac40;outline-offset:-1px}
+.hero{background:linear-gradient(115deg,#2b5475,#417b96);border:1px solid #8bb6ca}
+.hero:after{border:1px solid #d8f1eb3d;inset:10px;width:auto;height:auto;border-radius:17px}
+.hero-mark{transform:rotate(-10deg);filter:drop-shadow(0 8px 5px #16374755)}
 .hero-mark i{display:block;background:none!important;border:0!important;box-shadow:none!important;border-radius:0}
-.hero-mark .tile{width:100%;height:100%;border-radius:14%}
-.hero-mark i:nth-child(2){transform:translateY(-5px)}
-.hero-mark i:nth-child(6){transform:translateX(4px)}
-.hero-mark i:nth-child(7){transform:translate(-4px,5px)}
+.hero-mark .tile{width:100%;height:100%}
 .difficulty-symbol{background:none!important;border-radius:0;transform:rotate(-6deg);width:43px;height:43px}
 .difficulty-symbol .tile{width:100%;height:100%}
 .difficulty-card.master .difficulty-symbol{transform:rotate(7deg)}
-.primary-button{background:linear-gradient(#3b748b,#265972);border:1px solid #1a4c66;box-shadow:inset 0 1px 0 #ffffff3d,0 3px 0 #143e5170,0 5px 12px #0f344326}
-.primary-button:hover:not(:disabled){background:linear-gradient(#4a8299,#2e637c)}
-.in-match{background:radial-gradient(ellipse at 50% 0,#37617980,transparent 65%),repeating-linear-gradient(91deg,#122d3d00 0 26px,#8caaac08 27px,#122d3d00 29px),linear-gradient(110deg,#18384c,#234956 50%,#16374a)}
-.in-match:before{background-image:radial-gradient(#edf4e414 .6px,transparent .9px);background-size:5px 5px;opacity:.5}
-.table-brand{display:flex;align-items:center;gap:7px;color:#f4e9cb;text-shadow:0 2px 2px #0c263f88}
-.table-brand .rosette-art{width:24px;height:24px;flex-shrink:0;filter:drop-shadow(0 1px 1px #071e3744)}
-.duel-score{border-color:#a8b9b544;background:linear-gradient(115deg,#0e2a3e99,#24475799);box-shadow:inset 0 1px 0 #eff3de0c,0 3px 12px #10273626}
-.duelist-info>b{color:#f1ebd7}
-.duelist strong{font-family:Georgia,"Songti SC",serif;font-weight:500;color:#f4dfae;text-shadow:0 2px 0 #10283d}
-.duelist .duelist-avatar{background:radial-gradient(circle at 35% 25%,#f6e3ae,#bba16c);border:2px solid #e6cf98;color:#3f6173;box-shadow:0 2px 0 #10293d66,inset 0 0 0 2px #496b7d55;font-weight:700}
-.duel-round>b{color:#f0eddb}
-.duelist-info .score-pending{color:#b6c8c7}
-.score-pending em{color:#f4cb7e}
-.table-back,.table-tools button{border-color:#d8d0ac36;background:#dce8dd09;color:#e2e4d4;box-shadow:inset 0 1px 0 #ffffff08}
-.battle-board{background:linear-gradient(110deg,#fffbee,#f0eddd);border:1px solid #afc2c5;border-radius:13px;box-shadow:inset 0 0 0 3px #fff9e8,inset 0 0 0 4px #96acb966,0 4px 0 #102e3c66,0 8px 20px #0a293a40;color:#2d506a}
-.battle-board:before{inset:7px;border-color:#a4bac288;border-radius:7px}
-.battle-board.active{border-color:#d8ba72;box-shadow:inset 0 0 0 3px #fff6da,inset 0 0 0 4px #b6a06a88,0 0 0 1px #e6c58066,0 4px 0 #102e3c66,0 8px 20px #0a293a40}
-.ai-board{background:linear-gradient(125deg,#e9eee6,#d9e3df)}
-.board-corners{position:absolute;inset:0;pointer-events:none;z-index:1;border-radius:inherit;overflow:hidden}
-.board-corner{position:absolute;width:27px;height:27px;opacity:.6;pointer-events:none}
-.board-corner.nw{top:2px;left:2px}.board-corner.ne{top:2px;right:2px;transform:rotate(90deg)}
-.board-corner.se{bottom:2px;right:2px;transform:rotate(180deg)}.board-corner.sw{bottom:2px;left:2px;transform:rotate(270deg)}
-.battle-board-header{position:relative;z-index:2}
-.battle-board-header h3{font-family:"Songti SC","Noto Serif SC",serif;font-weight:750;color:#2e5870}
-.board-avatar{background:#e4ebdf;border-color:#9aafb3;color:#416b80;box-shadow:inset 0 1px 0 #fffff0}
-.board-round{color:#6a807c}
-.battle-board-legend{color:#778d91}
-.battle-board-legend span:last-child:before,.battle-board-legend span:last-child:after{content:"·";margin:0 6px;color:#af9f78}
-.battle-line{border-radius:5px}
-.battle-line.legal{background:#e0ecdf;border-color:#9db9ae}
-.battle-line.legal:hover{background:#d3e4d5;border-color:#5d988a}
-.battle-line.planned{border-color:#b38b43;background:#f2e2b8;box-shadow:inset 0 0 0 1px #eacb7a,0 1px 3px #9b7c3430}
-.line-number{color:#8c9da1}
-.row-hint{color:#467f75;font-weight:700}
-.battle-wall-cell{border-radius:4px;background:#c7d1ca44}
-.battle-wall-cell .tile{opacity:.38;filter:saturate(.8);box-shadow:none}
+.primary-button{background:linear-gradient(#4f92a5,#2e748d);border:1px solid #22617e;box-shadow:inset 0 1px 0 #ffffff5c,0 3px 0 #194d6970,0 5px 12px #0f344326}
+.primary-button:hover:not(:disabled){background:linear-gradient(#65a3b3,#3b8197)}
+.in-match{background:#3d6b8c;min-height:100svh;color:#eff7f2}
+.in-match:before{display:none}
+.table-brand{display:flex;align-items:center;gap:6px;color:#f6f9eb;text-shadow:0 1px 2px #214d6855}
+.table-brand .rosette-art{width:24px;height:24px;flex-shrink:0}
+.table-back,.table-tools button{border-color:#7297b3;background:#294c66aa;color:#edf3f2;box-shadow:inset 0 1px 0 #dcecef19}
+.duel-score{background:#2d5772a6;border-color:#7b9fb55c;box-shadow:none}
+.duelist-info>b{color:#eef7ed}.duelist strong{font-family:Georgia,serif;color:#fff3c6}
+.duelist-info .score-pending{color:#c7ddd8}.score-pending em{color:#ffe38d}
+.table-stage>.battle-board{--team:#7f96cd;background:#f4f5f4;border:3px solid var(--team);border-radius:30px 9px 7px 7px;box-shadow:0 3px 0 #254e6c55;padding:7px 7px 0;position:relative;min-height:0}
+.table-stage>.my-board{--team:#fa6d70}
+.battle-board:before,.board-corners{display:none}
+.table-stage>.battle-board.active{box-shadow:0 0 0 2px #f8df77,0 3px 0 #254e6c55}
+.battle-board-header{position:absolute;left:8px;top:8px;margin:0;width:60px;z-index:2;display:block}
+.battle-board-header>div{display:flex;align-items:center;flex-direction:column;gap:3px}
+.board-avatar{width:48px;height:48px;background:transparent;border:0;border-radius:50%;box-shadow:0 1px 3px #31576b40;padding:0;overflow:hidden}
+.player-portrait{width:100%;height:100%;display:block}
+.battle-board-header h3{font-family:inherit;font-size:10px;color:#fff;background:#3c515de0;border-radius:3px;padding:2px 5px;line-height:1.2;min-width:40px;text-align:center;margin:0;font-weight:500}
+.board-round,.battle-board-legend{display:none}
+.board-body,.ai-board .board-body{display:block;padding:0;margin:0}
+.battle-row,.ai-board .battle-row{grid-template-columns:minmax(0,1fr) calc(5 * var(--board-tile) + 4 * var(--brick-gap));gap:12px;min-height:calc(var(--board-tile) + 2px);margin:0;align-items:center}
+.battle-line,.ai-board .battle-line{min-height:calc(var(--board-tile) + 2px);height:calc(var(--board-tile) + 2px);padding:0;gap:4px;border-radius:4px;justify-content:flex-end}
+.line-number,.ai-board .line-number{display:none}
+.line-cells,.ai-board .line-cells{gap:var(--brick-gap)}
+.battle-line .tile,.ai-board .battle-line .tile{width:var(--board-tile);height:var(--board-tile);border-radius:12%}
+.row-hint,.ai-board .row-hint{width:9px;font-size:11px;flex-shrink:0;color:#52666b;font-weight:700}
+.battle-line.legal{background:#d2ebd33d;border-color:#75ac9c66}
+.battle-line.legal:hover{background:#c9e5ca;border-color:#78aa96}
+.battle-line.planned{background:#f5d98e6e;border-color:#d0a847;box-shadow:inset 0 0 0 1px #fff3bd}
+.battle-wall-row,.ai-board .battle-wall-row{grid-template-columns:repeat(5,var(--board-tile));gap:var(--brick-gap)}
+.battle-wall-cell{border-radius:5px;background:#d5d7d4}
+.battle-wall-cell .tile,.ai-board .battle-wall-cell .tile{width:var(--board-tile);height:var(--board-tile);opacity:.2;filter:saturate(.8);box-shadow:none}
 .battle-wall-cell.filled{background:transparent}
-.battle-wall-cell.filled .tile{opacity:1;filter:none;box-shadow:0 2px 0 #425f6a99,0 2px 4px #2a4a6555;transform:translateY(-1px)}
-.battle-wall-cell.pending-wall{outline-color:#b98d41;background:#f6e8bc}
-.battle-wall-cell.pending-wall .tile{opacity:.8;filter:none}
-.battle-wall-cell.target{outline-color:#7a9b91;background:#d5e6d5}
-.battle-wall-cell.planned-target{outline-color:#c2933c;box-shadow:0 0 8px #d6af5c88}
-.floor-heading{color:#708181}.floor-heading b{color:#a0754e}
-.battle-floor{border-top-color:#b9c6c080}
-.floor-slot small{color:#9a8872}
-.floor-slot .tile.empty{opacity:.78}
-.floor-heading .floor-drop{background:#e9e9d9;color:#7e8f8b;border-color:#c1c9b5;box-shadow:inset 0 1px 0 #fff9}
-.floor-heading .floor-drop:enabled{background:#f0dfb6;color:#8d652d;border-color:#b99e62}
-.game-factory{position:relative;border:0;background:none!important;box-shadow:none!important;border-radius:50%;isolation:isolate}
-.plate-art{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);z-index:-1;pointer-events:none;filter:drop-shadow(0 3px 0 #0e2f4380) drop-shadow(0 5px 5px #082b3a40)}
-.game-factory-tiles{position:relative;z-index:1}
-.game-factory.plate-selected{outline:2px solid #eed49a;outline-offset:2px;transform:translateY(-2px)}
-.game-factory.plate-selected .plate-art{filter:drop-shadow(0 0 5px #e8c87caa)}
-.game-tile.chosen .tile{outline:2px solid #fff2b2;outline-offset:1px;box-shadow:0 0 0 3px #d3a74c88,0 3px 3px #113a4d55}
-.game-tile:not(:disabled):hover .tile{transform:translateY(-3px) rotate(-3deg)}
-.factory-index{border-color:#708c9d;background:#e9e6cf;color:#4b6e83;box-shadow:0 1px 1px #102b3b33;min-width:19px;text-align:center}
-.market-heading{color:#f0e6ca;font-weight:600;letter-spacing:.05em}
-.market-heading small{color:#a7bdbc;font-weight:400;letter-spacing:0}
-.game-center{position:relative;background:linear-gradient(120deg,#12324799,#1d455599);border-color:#91aeb15c;box-shadow:inset 0 1px 4px #061f353d,0 1px 0 #fff2}
-.center-heading{color:#d5dfd6}
-.token-badge{color:#e2c588}
-.center-pick{gap:6px}.center-pick b{font-family:Georgia,serif;font-size:13px;color:#ecdfbc}
-.center-pick:disabled{opacity:.28}
-.center-pick.chosen{outline:1px solid #e7c77e;background:#dbc47b24;box-shadow:0 0 0 2px #d6bd7333}
-.latest-move{color:#abc2bd}.latest-move span{color:#e0c68b}
-.action-dock{background:linear-gradient(110deg,#fffaeb,#eae8d8);border-color:#bfbd9c;box-shadow:inset 0 1px 0 #fff,0 4px 0 #082b3c66,0 7px 22px #0928394d;color:#365b6a}
-.dock-copy>span{color:#81918b}.dock-symbol{color:#b7964e}
-.dock-cancel{background:#dfe5dc;color:#607c85}
-.confirm-move{border-radius:8px}
-.round-summary,.table-drawer{border:1px solid #97aeb5;background:linear-gradient(125deg,#fffbee,#efeada);box-shadow:inset 0 0 0 4px #fdf7e5,inset 0 0 0 5px #9bafb066,0 20px 80px #051d3655}
-.round-summary h3,.drawer-heading h3{color:#315b73}.result-emblem{color:#b99a58}
-.results-scrim,.drawer-scrim{background:#0b293ebd}
-@media(max-width:760px){
-  .hero-mark{opacity:.86;right:-9px;grid-template-columns:repeat(3,32px);gap:5px;top:66px}
-  .difficulty-symbol{width:38px;height:38px}
-  .table-brand{gap:4px;font-size:16px;letter-spacing:.08em}
-  .table-brand .rosette-art{width:18px;height:18px}
-  .battle-board{border-radius:10px}
-  .battle-board:before{inset:5px;border-radius:6px}
-  .board-corner{width:20px;height:20px;opacity:.5}
-  .battle-wall-cell .tile{opacity:.4}
-  .battle-board-header h3{font-size:11px}
-  .ai-board .battle-board-header h3{font-size:10px}
-  .ai-board .board-corner{width:17px;height:17px}
-  .battle-wall-cell.filled .tile{box-shadow:0 1.5px 0 #46627899,0 2px 2px #29485940}
-  .center-pick{gap:4px}.center-pick b{font-size:11px}
-  .action-dock{border-radius:9px}
-  .game-factories{padding-bottom:8px}
-  .game-factory.plate-selected{transform:translateY(-1px)}
+.battle-wall-cell.filled .tile,.ai-board .battle-wall-cell.filled .tile{opacity:1;filter:none;box-shadow:0 1px 1px #31566880;transform:none}
+.battle-wall-cell.pending-wall{outline:1px dashed #d6a246;outline-offset:0;background:#eee2bd}
+.battle-wall-cell.pending-wall .tile{opacity:.72;filter:none}
+.battle-wall-cell.target{outline:1px dashed #55a896;outline-offset:0;background:#d7e6d3}
+.battle-wall-cell.planned-target{outline:2px solid #e0b655;box-shadow:0 0 5px #e6c57e66}
+.battle-floor,.ai-board .battle-floor{display:grid;grid-template-columns:minmax(0,1fr) 73px;align-items:center;gap:9px;margin:4px -7px 0;padding:3px 5px 4px;border:0;background:var(--team);border-radius:0 0 3px 3px;min-height:33px}
+.floor-zone{width:100%;min-width:0;border:0;background:none;padding:0;margin:0;border-radius:3px;display:block}
+.floor-zone:disabled{opacity:1;cursor:default}
+.floor-zone:enabled{cursor:pointer;outline:1px dashed #fff9;outline-offset:1px}
+.floor-zone.planned{outline:2px solid #ffe678;outline-offset:1px;background:#fff3}
+.floor-slots,.ai-board .floor-slots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;justify-items:center;max-width:none;height:calc(var(--floor-tile) + 6px)}
+.floor-slot,.ai-board .floor-slot{position:relative;gap:0;justify-content:flex-start}
+.floor-slot .tile,.marker-tile,.ai-board .floor-slot .tile,.ai-board .marker-tile{width:var(--floor-tile);height:var(--floor-tile);border-radius:4px;font-size:15px}
+.floor-slot small,.ai-board .floor-slot small{display:block;position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:8px;line-height:10px;color:#fff;background:var(--team);border-radius:6px;min-width:16px;text-align:center}
+.marker-tile{background:linear-gradient(#f9f9f1,#c6ccce);border:1px solid #6e7d82;color:#263c46;font-family:Georgia,serif;font-weight:700;box-shadow:inset 0 1px 1px white;display:grid;place-items:center}
+.board-score{display:grid;grid-template-columns:20px 1fr;grid-template-rows:21px 9px;align-items:center;text-align:center;background:#f7f8ef;border-radius:3px;min-width:0;height:30px;color:#253c48;padding:0 3px}
+.board-score>span{font-size:20px;color:#f3d841;line-height:1}
+.board-score strong{font-family:Georgia,serif;font-size:22px;font-weight:700;line-height:1}
+.board-score small{grid-column:1/-1;font-size:8px;line-height:9px;color:#687a7a;white-space:nowrap}
+.game-market{display:grid;grid-template-columns:14px minmax(0,1fr) 87px;grid-template-rows:17px minmax(0,1fr) auto;gap:5px 7px;padding:0!important;min-height:300px;color:#edf6ef}
+.market-heading{grid-column:1/-1;grid-row:1;padding:0!important;font-size:11px;line-height:17px;min-width:0;gap:8px}
+.market-heading>span{font-weight:600;white-space:nowrap}
+.market-heading small{font-size:8px;color:#d7e4df;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.market-time-gauge{grid-column:1;grid-row:2;display:flex;flex-direction:column;align-items:center;min-height:0;gap:4px;padding:3px 0}
+.market-time-track{flex:1;position:relative;width:8px;background:#d6e5df55;border-radius:6px;overflow:hidden;min-height:0}
+.market-time-fill{position:absolute;bottom:0;left:0;width:100%;height:0;background:#ffe44f;border-radius:6px;transition:height .25s linear}
+.market-clock{font-size:10px;font-weight:700;color:#fff;line-height:12px;font-variant-numeric:tabular-nums}
+.market-time-gauge>small{display:none}
+.game-market.clock-urgent .market-time-fill{background:#ff9a6a}
+.game-market.clock-urgent .market-clock{color:#ffc7a1}
+.game-factories{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:0;align-items:center;justify-items:center;padding:0!important;min-height:0}
+.game-factory{width:var(--plate-size);height:var(--plate-size);position:relative;border:0;background:none!important;box-shadow:none!important;border-radius:50%;isolation:isolate;grid-column:auto;flex-shrink:0}
+.game-factory:nth-child(1){grid-column:1/span 2;grid-row:1}
+.game-factory:nth-child(2){grid-column:3/span 2;grid-row:1}
+.game-factory:nth-child(3){grid-column:2/span 2;grid-row:2}
+.game-factory:nth-child(4){grid-column:1/span 2;grid-row:3}
+.game-factory:nth-child(5){grid-column:3/span 2;grid-row:3}
+.plate-art{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);z-index:-1;pointer-events:none;filter:drop-shadow(0 3px 0 #30536f88) drop-shadow(0 3px 3px #153d5233)}
+.game-factory-tiles{position:relative;z-index:1;grid-template-columns:repeat(2,23px);gap:2px}
+.game-tile{width:23px;height:23px}
+.game-tile .tile{width:22px;height:22px;border-radius:12%}
+.game-factory.plate-selected{outline:2px solid #ffe674;outline-offset:1px;transform:none}
+.game-tile.chosen .tile{outline:2px solid #fff3b0;outline-offset:0;transform:none;box-shadow:0 0 0 2px #e9bf5d}
+.game-tile:not(:disabled):hover .tile{transform:translateY(-1px)}
+.factory-index{font-size:6px;line-height:9px;bottom:-2px;padding:0 3px;border:1px solid #8b9fae;background:#e2e5da;color:#57748b;min-width:13px;text-align:center;box-shadow:none}
+.pool-sidebar{grid-column:3;grid-row:2;min-height:0;display:flex;flex-direction:column;gap:4px}
+.game-center{flex:1;min-height:0;padding:4px;border:3px solid #7c96b2;border-radius:9px;background:#cdd3cc;display:flex;flex-direction:column;box-shadow:none}
+.center-heading{flex-shrink:0;justify-content:center;font-size:11px;color:#f9f9f0;line-height:15px;margin:-4px -4px 4px;background:#7c96b2;padding:2px 1px}
+.center-colors{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-height:0;flex:1;justify-content:flex-start}
+.center-pick{display:flex;align-items:center;justify-content:flex-start;min-height:0;gap:3px;max-height:30px;padding:1px 0;border:1px solid transparent;border-radius:3px;flex:0 1 auto;color:#263b42}
+.center-pick .tile{width:var(--pool-tile);height:var(--pool-tile)}
+.center-pick .count-prefix{font-size:14px;color:#263b42;line-height:1}
+.center-pick b{font-family:Georgia,serif;font-size:17px;color:#1e343c;font-weight:600;line-height:1}
+.center-pick:disabled{opacity:1}
+.center-pick.chosen{outline:1px solid #a67e35;background:#fff3c16b;box-shadow:0 0 0 1px #ffe68d}
+.center-empty{font-size:9px;line-height:1.8;color:#758b8e;text-align:center;margin:auto 0}
+.pool-selection{height:40px;flex-shrink:0;padding:3px;border-radius:7px;background:#81a9a2;color:#f6fbf0;text-align:center}
+.pool-selection>span{display:block;font-size:9px;line-height:11px}
+.pool-selection>div{height:23px;display:flex;align-items:center;justify-content:center;gap:5px}
+.pool-selection .tile{width:21px;height:21px}
+.pool-selection b{font-size:12px;font-weight:600}
+.pool-selection small{font-size:8px;opacity:.75}
+.latest-move{grid-column:1/-1;grid-row:3;font-size:9px;line-height:1.5;white-space:normal;margin:5px 0 0;color:#d3e4df}
+.latest-move span{color:#fff0b3}
+.action-dock{background:#edf2ec;border-color:#bbcdd0;color:#2e5b71;box-shadow:0 3px 0 #28547066,0 5px 15px #244f6b33}
+.dock-copy>span{color:#758e98}.dock-symbol{color:#b99c4d}.dock-cancel{color:#68818b;background:#dce6e0}
+.round-summary,.table-drawer{background:#f4f5ee;border:2px solid #8ba7b8;box-shadow:0 20px 60px #173f5866}
+.round-summary h3,.drawer-heading h3{color:#2c5772}.results-scrim,.drawer-scrim{background:#254e68bc}
+@media(max-width:1120px) and (min-width:761px){
+  .game-market{grid-template-columns:18px minmax(0,1fr) 125px;min-height:260px}
+  .game-factories{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));display:grid}
+  .game-factory{width:68px;height:68px}
+  .game-center{align-self:stretch}
 }
-@media(prefers-reduced-motion:reduce){.game-factory,.game-tile .tile{transform:none!important}}
-.marker-tile{border-radius:50%!important;background:radial-gradient(circle at 32% 25%,#ffedb1,#c6a25e);border:1px solid #a2874e;box-shadow:inset 0 0 0 2px #e7cf91,0 2px 0 #49616d66;color:#725421;font-weight:700}
-.battle-wall-cell:not(.filled):not(.pending-wall) .tile{opacity:.5}
+@media(max-width:760px){
+  .hero-mark{opacity:.8;right:-6px;grid-template-columns:repeat(3,31px);gap:5px;top:66px}
+  .difficulty-symbol{width:38px;height:38px}
+  .in-match .app-shell{--board-tile:clamp(22px,3.3svh,29px);--plate-size:clamp(54px,8svh,74px);--pool-tile:clamp(17px,2.8svh,24px);--floor-tile:clamp(17px,2.8svh,23px);max-width:466px;min-height:600px;height:100svh;padding:6px 9px calc(6px + env(safe-area-inset-bottom))}
+  #match-content{display:flex;flex-direction:column;gap:5px;height:100%}
+  .table-topbar{height:26px;min-height:26px;margin:0;flex-shrink:0}
+  .table-brand{font-size:16px;gap:4px;letter-spacing:.06em}
+  .table-brand .rosette-art{width:17px;height:17px}
+  .duel-score{display:block;min-height:26px;height:26px;margin:0;padding:1px 3px 3px;flex-shrink:0;background:none;border:0;border-radius:0;box-shadow:none;overflow:visible}
+  .duel-score .duelist{display:none}
+  .duel-round{display:flex;align-items:center;justify-content:space-between;width:100%;height:22px;gap:7px}
+  .duel-round>small{font-size:9px;line-height:18px;letter-spacing:0;color:#d9e8e3}
+  .duel-round>b{font-size:11px;line-height:18px;margin:0;color:#f7faea}
+  .duel-round .turn-timer{font-size:17px;line-height:20px;color:#ffe991}
+  .turn-progress{height:2px;background:#d9e8e026}.turn-progress i{background:#ffe34f}
+  .clock-settled{font-size:9px;color:#dcebdc}
+  .table-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;gap:6px;justify-content:normal;align-items:stretch}
+  .table-stage>.battle-board{width:100%;padding:6px 6px 0;border-radius:28px 7px 5px 5px;border-width:3px;min-height:0;grid-column:1}
+  .table-stage>.ai-board{order:0;grid-row:1}
+  .table-stage>.game-market{order:0;grid-row:2;grid-column:1;min-height:0;height:100%;width:100%;grid-template-columns:13px minmax(0,1fr) 83px;grid-template-rows:13px minmax(0,1fr);gap:4px 5px}
+  .table-stage>.my-board{order:0;grid-row:3}
+  .battle-board-header,.ai-board .battle-board-header{left:7px;top:7px;width:53px;min-height:0;margin:0}
+  .battle-board-header>div{gap:2px}
+  .board-avatar,.ai-board .board-avatar{width:40px;height:40px;font-size:0}
+  .battle-board-header h3,.ai-board .battle-board-header h3{font-size:9px;line-height:11px;min-width:33px;padding:2px 4px}
+  .battle-row,.ai-board .battle-row{gap:10px;min-height:calc(var(--board-tile) + 2px);margin:0;grid-template-columns:minmax(0,1fr) calc(5 * var(--board-tile) + 4 * var(--brick-gap))}
+  .battle-line,.ai-board .battle-line{min-height:calc(var(--board-tile) + 2px);height:calc(var(--board-tile) + 2px);padding:0;gap:3px}
+  .battle-line .tile,.ai-board .battle-line .tile,.battle-wall-cell .tile,.ai-board .battle-wall-cell .tile{width:var(--board-tile);height:var(--board-tile)}
+  .battle-wall-row,.ai-board .battle-wall-row{grid-template-columns:repeat(5,var(--board-tile));gap:var(--brick-gap)}
+  .row-hint,.ai-board .row-hint{width:8px;font-size:10px}
+  .battle-floor,.ai-board .battle-floor{grid-template-columns:minmax(0,1fr) 70px;margin:3px -6px 0;padding:2px 4px 3px;gap:7px;min-height:0}
+  .floor-slots,.ai-board .floor-slots{height:calc(var(--floor-tile) + 6px);max-width:none;gap:2px}
+  .floor-slot .tile,.marker-tile,.ai-board .floor-slot .tile,.ai-board .marker-tile{width:var(--floor-tile);height:var(--floor-tile);border-radius:4px;font-size:13px}
+  .floor-slot small,.ai-board .floor-slot small{display:block;font-size:8px;line-height:9px;min-width:15px;bottom:-1px}
+  .board-score{height:28px;grid-template-columns:18px 1fr;grid-template-rows:19px 9px;padding:0 2px}
+  .board-score>span{font-size:18px}.board-score strong{font-size:21px}.board-score small{font-size:8px}
+  .market-heading{font-size:9px;line-height:13px;gap:8px}
+  .market-heading small{font-size:7px}
+  .game-factories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:0;align-items:center;justify-items:center}
+  .game-factory{width:var(--plate-size);height:var(--plate-size)}
+  .game-factory-tiles{grid-template-columns:repeat(2,21px);gap:1px}
+  .game-tile{width:21px;height:21px}
+  .game-tile .tile{width:20px;height:20px}
+  .factory-index{font-size:6px;bottom:-2px;line-height:8px;padding:0 2px}
+  .market-time-gauge{padding:2px 0;gap:3px}.market-time-track{width:7px}.market-clock{font-size:10px}
+  .game-center{padding:4px;border-width:3px;border-radius:7px}
+  .center-heading{font-size:10px;line-height:13px;margin:-4px -4px 3px;padding:1px 0}
+  .center-colors{gap:2px}
+  .center-pick{min-height:0;padding:0;gap:3px;border-width:0;max-height:28px}
+  .center-pick .tile{width:var(--pool-tile);height:var(--pool-tile)}
+  .center-pick .count-prefix{font-size:13px}.center-pick b{font-size:15px}
+  .center-empty{font-size:8px;line-height:1.8}
+  .pool-selection{height:clamp(32px,5svh,44px);padding:2px;border-radius:6px}
+  .pool-selection>span{font-size:8px;line-height:10px}
+  .pool-selection>div{height:calc(100% - 10px);gap:4px}
+  .pool-selection .tile{width:clamp(15px,2.5svh,22px);height:clamp(15px,2.5svh,22px)}
+  .pool-selection b{font-size:11px}.pool-selection small{font-size:7px}
+  .latest-move{display:none}
+  .action-dock{position:static;transform:none;left:auto;right:auto;flex-shrink:0;width:100%;max-width:none;min-height:50px;border-radius:7px;margin:0;padding:7px 9px;gap:7px}
+  .dock-copy b{font-size:10px}.dock-copy>span{font-size:8px;line-height:1.4}
+  .dock-picked .tile{width:24px;height:24px}
+  .dock-cancel{position:static;width:23px;height:34px;flex-shrink:0}
+  .confirm-move{min-height:34px;min-width:84px;padding:8px;font-size:11px;border-radius:6px}
+}
+@media(max-width:760px) and (max-height:660px){
+  .in-match .app-shell{--board-tile:22px;--plate-size:54px;--pool-tile:17px;--floor-tile:17px}
+  #match-content{gap:4px}.table-stage{gap:4px}
+  .table-stage>.battle-board{padding-top:5px}
+  .battle-floor,.ai-board .battle-floor{padding-top:1px;padding-bottom:2px;margin-top:2px}
+  .board-score{height:26px;grid-template-rows:18px 8px}
+  .board-score strong{font-size:20px}.board-score small{line-height:8px;font-size:7px}
+  .board-avatar,.ai-board .board-avatar{width:35px;height:35px}
+  .battle-board-header,.ai-board .battle-board-header{width:47px;left:5px;top:6px}
+  .battle-board-header h3,.ai-board .battle-board-header h3{font-size:8px;padding:1px 4px;line-height:10px}
+  .action-dock{min-height:48px;padding:6px 8px}
+}
+@media(prefers-reduced-motion:reduce){.market-time-fill{transition:none}.game-tile .tile{transform:none!important}}
+/* 两种玩法入口与满墙进度。 */
+.variant-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;padding:0;margin:0 0 18px}
+.variant-card{display:block;position:relative;padding:13px 14px;border:1px solid #d5e0db;border-radius:10px;background:#f4f7f0;cursor:pointer;color:#3b6572}
+.variant-card input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.variant-card b{display:block;font-size:13px;line-height:1.5}
+.variant-card small{display:block;font-size:10px;color:#8b9b96;line-height:1.6;margin-top:3px}
+.variant-card em{font-size:8px;font-style:normal;font-weight:500;padding:1px 4px;border-radius:3px;background:#ffe3d5;color:#b86551;vertical-align:2px}
+.variant-card:has(input:checked){border-color:#487d8b;background:#e6f0eb;box-shadow:inset 0 0 0 1px #487d8b}
+.variant-card.race:has(input:checked){border-color:#bd7771;background:#fbf0e5;box-shadow:inset 0 0 0 1px #bd7771}
+.variant-card:has(input:focus-visible){outline:3px solid #d6b16c;outline-offset:2px}
+.race-note{font-size:11px;line-height:1.9;margin:0;padding:14px;border:1px solid #e5d5be;border-radius:10px;background:#faf4e7;color:#8c816a}
+.board-score.race-progress>span{color:#58879a;font-size:17px}
+.board-score.race-progress strong{font-size:20px;white-space:nowrap}
+.board-score.race-progress strong em{font-size:9px;font-style:normal;font-weight:500;color:#66818e;margin-left:1px}
+.result-scores b small{font-size:16px;color:#8ba29e;font-weight:400}
+.settled-player p>b{width:auto;min-width:40px;white-space:nowrap}
+@media(max-width:760px){
+  .variant-options{gap:8px;margin-bottom:15px}
+  .variant-card{padding:11px 10px;border-radius:9px}
+  .variant-card b{font-size:12px}.variant-card small{font-size:8px}.variant-card em{font-size:7px;vertical-align:1px}
+  .race-note{font-size:10px;padding:12px;line-height:1.85}
+  .board-score.race-progress strong{font-size:19px}.board-score.race-progress strong em{font-size:8px}
+}
 
 </style>
 </head>
@@ -330,13 +441,18 @@ html{background:#f4f3ed}body{background:radial-gradient(ellipse at 80% 0,#e7eee6
     </header>
 
     <nav class="mode-tabs" role="tablist" aria-label="玩法切换">
-      <button type="button" id="play-tab" role="tab" aria-controls="play-mode" aria-selected="true">人机对战 <span>三种强度，完整对局</span></button>
+      <button type="button" id="play-tab" role="tab" aria-controls="play-mode" aria-selected="true">开始对局 <span>经典人机 · 双人竞速</span></button>
       <button type="button" id="helper-tab" role="tab" aria-controls="helper-mode" aria-selected="false">对局助手 <span>录入棋盘，推荐出手</span></button>
     </nav>
 
     <section id="play-mode" role="tabpanel" aria-labelledby="play-tab">
       <div class="lobby-layout"><div class="match-setup panel">
-        <div class="setup-title"><span class="section-kicker">CLASSIC DUEL / 经典对局</span><h2>这一局，想挑战谁？</h2><p>本地算法对手 · 经典彩色墙 · 随时继续</p></div>
+        <div class="setup-title"><span class="section-kicker" id="setup-kicker">CLASSIC DUEL / 经典对局</span><h2 id="setup-heading">这一局，想挑战谁？</h2><p id="setup-description">本地算法对手 · 经典彩色墙 · 随时继续</p></div>
+        <fieldset class="variant-options"><legend class="sr-only">选择玩法</legend>
+          <label class="variant-card"><input type="radio" name="variant" value="standard" checked><b>经典人机</b><small>三档算法 · 按积分决胜</small></label>
+          <label class="variant-card race"><input type="radio" name="variant" value="race"><b>双人满墙竞速 <em>新</em></b><small>同机轮流 · 先满 25 格获胜</small></label>
+        </fieldset>
+        <p id="race-note" class="race-note hidden">两位玩家在同一部手机轮流操作。不限轮次，填满一行仍继续；最后所需图案线完成时，立即贴墙并判定满墙者获胜。</p>
         <fieldset class="difficulty-options"><legend class="sr-only">人机强度</legend>
           <label class="difficulty-card"><input type="radio" name="difficulty" value="easy"><i class="difficulty-symbol">Ⅰ</i><span><b>入门</b><small>慢慢熟悉，每一块都有可能</small></span><em>轻松练习</em></label>
           <label class="difficulty-card"><input type="radio" name="difficulty" value="medium"><i class="difficulty-symbol">Ⅱ</i><span><b>进阶</b><small>把握相邻，算好每一步收益</small></span><em>认真较量</em></label>
@@ -344,7 +460,7 @@ html{background:#f4f3ed}body{background:radial-gradient(ellipse at 80% 0,#e7eee6
         </fieldset>
         <div class="new-match-controls"><div class="match-settings"><label>每步限时 <select id="game-seconds"><option value="90">90 秒</option><option value="60">60 秒</option></select></label><label>首轮先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机决定</option></select></label></div><button type="button" id="new-match" class="primary-button">开始对局 <span>↗</span></button></div>
         <div id="resume-slot"></div>
-      </div><aside class="lobby-side"><span class="section-kicker">一眼看懂</span><h2>简单落砖，<br>细细思量。</h2><ol><li><b>选砖</b><span>从一个圆盘拿走全部同色砖。</span></li><li><b>落砖</b><span>放入一条图案线，多余的会扣分。</span></li><li><b>成墙</b><span>完整图案线贴到墙上，相邻得分。</span></li></ol><div class="lobby-tip">宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。<br>超时自动落砖，返回大厅暂停计时。</div></aside></div>
+      </div><aside class="lobby-side"><span class="section-kicker">一眼看懂</span><h2>简单落砖，<br>细细思量。</h2><ol><li><b>选砖</b><span>从一个圆盘拿走全部同色砖。</span></li><li><b>落砖</b><span>放入一条图案线，多余的会扣分。</span></li><li><b>成墙</b><span>完整图案线贴到墙上，相邻得分。</span></li></ol><div class="lobby-tip" id="setup-tip">宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。<br>超时自动落砖，返回大厅暂停计时。</div></aside></div>
     </section>
 
     <section id="match-screen" class="hidden" aria-label="对局桌面"><div id="match-content"></div></section>
@@ -1034,33 +1150,39 @@ self.onmessage = function (event) {
   // 共用矢量母版：花纹随砖格缩放，在线版和单文件版都不请求外部图片。
   const colors = ["blue", "yellow", "red", "black", "white"];
   const palettes = {
-    blue: ["#477dd3", "#174b94", "#f6efd4", "#8dc5ee"],
-    yellow: ["#ffda75", "#e4a53d", "#89501e", "#fff6cc"],
-    red: ["#eb8068", "#bd3d3d", "#fff0cd", "#8f2c35"],
-    black: ["#29566d", "#102d43", "#f0c879", "#81b4b5"],
-    white: ["#fffdf0", "#dedfc9", "#258c9b", "#1f5277"],
+    blue: ["#52b7d4", "#197791"], yellow: ["#ffd574", "#f0ad45"],
+    red: ["#ff7a66", "#ed4e4c"], black: ["#203a3c", "#102328"],
+    white: ["#fcfff5", "#dfefdf"],
   };
   const rotate = (markup, angles) => angles.map(angle => `<g transform="rotate(${angle} 40 40)">${markup}</g>`).join("");
-  const rim = (ink) => `<rect x="6" y="6" width="68" height="68" rx="5" fill="none" stroke="${ink}" stroke-width="1.5" opacity=".65"/>`;
-  const corners = (ink) => rotate(`<path d="M12 27V13h14M16 22a6 6 0 0 1 6-6" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round"/>`, [0, 90, 180, 270]);
+  function spiral(phase) {
+    const points = Array.from({ length: 100 }, (_, i) => {
+      const t = i / 99 * Math.PI * 2.7, radius = 1.6 * Math.exp(.35 * t);
+      return `${(40 + radius * Math.cos(t + phase)).toFixed(2)},${(40 + radius * Math.sin(t + phase)).toFixed(2)}`;
+    });
+    return `<path d="M${points.join("L")}" fill="none" stroke="#a4e0e9" stroke-width="3.4" stroke-linecap="round"/>`;
+  }
   const patterns = {
-    blue: `${rim("#d9e5eb")}${corners("#c9e2ef")}${rotate('<path d="M40 39C24 36 22 21 40 12C58 21 56 36 40 39Z" fill="#f6efd4"/><path d="M40 32V20" stroke="#548bbd" stroke-width="2.2"/>', [0, 90, 180, 270])}<path d="M40 31l9 9-9 9-9-9Z" fill="#86bfd8" stroke="#f6efd4" stroke-width="2"/><circle cx="40" cy="40" r="3.5" fill="#164b8b"/>`,
-    yellow: `${rim("#9b692c")}${corners("#fff1b5")}<path d="M40 12l8 17 19-1-11 15 7 18-19-6-15 12 1-20-17-9 18-7Z" fill="#8e571f"/><path d="M40 23l5 13 14 4-14 5-5 14-5-14-14-5 14-4Z" fill="#fff1bc"/>${rotate('<path d="M40 17l2 8h-4Z" fill="#f5ca64"/>', [0, 45, 90, 135, 180, 225, 270, 315])}<circle cx="40" cy="40" r="5" fill="#c5822d"/>`,
-    red: `${rim("#ffe4ba")}${corners("#f7c7a5")}${rotate('<path d="M40 38C26 33 28 19 40 13C52 19 54 33 40 38Z" fill="#fff0d4"/><path d="M40 20v12" stroke="#d15d51" stroke-width="2"/>', [0, 45, 90, 135, 180, 225, 270, 315])}<circle cx="40" cy="40" r="9" fill="#92383c" stroke="#ffe4ba" stroke-width="2"/><path d="M40 34l6 6-6 6-6-6Z" fill="#f5c582"/>`,
-    black: `${rim("#d1b879")}${corners("#7ca6af")}<path d="M40 11l8 17 18-2-7 17 9 16-19 1-9 17-9-17-19-1 9-16-7-17 18 2Z" fill="#e7bf72"/><path d="M40 23l6 12 14 5-14 6-6 13-6-13-14-6 14-5Z" fill="#1c4a61" stroke="#f7e1aa" stroke-width="1.7"/><path d="M40 31l9 9-9 9-9-9Z" fill="#85b5b3"/><circle cx="40" cy="40" r="3" fill="#f4d497"/>`,
-    white: `${rim("#6097ac")}${corners("#275e82")}${rotate('<path d="M40 38C23 37 19 25 24 13C36 19 42 27 40 38Z" fill="#258f9d"/><path d="M27 20l9 12" stroke="#c2dfd6" stroke-width="2.2"/><path d="M40 29c-4-11 2-17 9-19 4 10 1 16-9 19Z" fill="#83c1bd"/>', [0, 90, 180, 270])}<path d="M40 30l10 10-10 10-10-10Z" fill="#f6f1d8" stroke="#286780" stroke-width="2"/><circle cx="40" cy="40" r="3.5" fill="#23677e"/>`,
+    blue: [0, Math.PI / 2, Math.PI, Math.PI * 1.5].map(spiral).join(""),
+    yellow: `<g fill="none" stroke="#e4784c" stroke-width="1.8">${rotate('<ellipse cx="40" cy="29" rx="12" ry="20"/>', [0, 45, 90, 135, 180, 225, 270, 315])}<circle cx="40" cy="40" r="24"/><circle cx="40" cy="40" r="7"/></g>`,
+    red: `<g fill="none" stroke="#ffe187" stroke-width="1.4">${rotate('<ellipse cx="40" cy="24" rx="6" ry="17"/>', Array.from({ length: 20 }, (_, i) => i * 18))}</g><circle cx="40" cy="40" r="13" fill="#f35b50" stroke="#ffe187" stroke-width="1.7"/><circle cx="40" cy="40" r="17" fill="none" stroke="#ffe187" stroke-width="1.2"/>`,
+    black: `<g fill="none" stroke="#3d8c88" stroke-width="1.6" stroke-linejoin="round"><path d="M40 11C55 11 70 32 69 47C68 62 42 71 26 64C11 57 11 31 22 19C27 13 34 11 40 11Z"/><path d="M40 16C52 16 65 33 64 46C63 57 42 65 29 59C18 54 17 33 26 23C30 18 35 16 40 16Z"/><path d="M29 23Q48 17 60 38Q64 55 43 60Q23 61 21 42Q20 29 29 23Z"/><path d="M33 27Q49 20 57 38Q60 51 44 55Q28 57 26 42Q24 32 33 27Z"/><path d="M33 28L55 41L33 55Z"/><path d="M37 33L50 41L37 49Z"/></g>`,
+    white: `${rotate('<path d="M40 9L49 27L44 36H36L31 27Z" fill="#35a5aa"/><path d="M40 18L44 28L40 34L36 28Z" fill="#eaf6e5"/>', [0, 60, 120, 180, 240, 300])}<path d="M40 26L45 34L54 32L51 41L57 48L47 49L43 58L38 50L28 52L31 43L24 36L34 35Z" fill="#eaf6e5"/><path d="M40 32L47 38L44 47L35 47L32 38Z" fill="#35a5aa"/><circle cx="40" cy="40" r="3" fill="#eaf6e5"/>`,
   };
   const tileSymbols = colors.map(color => {
     const [light, dark] = palettes[color];
-    return `<linearGradient id="azul-glaze-${color}" x2=".8" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient><symbol id="azul-tile-${color}" viewBox="0 0 80 80"><rect x="1" y="1" width="78" height="78" rx="7" fill="url(#azul-glaze-${color})"/>${patterns[color]}<path d="M8 3h64a5 5 0 0 1 5 5v18C59 13 29 25 3 19V8a5 5 0 0 1 5-5Z" fill="url(#azul-shine)"/><rect x="2" y="2" width="76" height="76" rx="6" fill="none" stroke="#fff8e0" stroke-width="2" opacity=".7"/></symbol>`;
+    return `<linearGradient id="azul-glaze-${color}" x2=".8" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient><symbol id="azul-tile-${color}" viewBox="0 0 80 80"><rect x="1" y="1" width="78" height="78" rx="9" fill="url(#azul-glaze-${color})"/>${patterns[color]}<path d="M8 3h64a5 5 0 0 1 5 5v18C59 13 29 25 3 19V8a5 5 0 0 1 5-5Z" fill="url(#azul-shine)"/><rect x="2" y="2" width="76" height="76" rx="8" fill="none" stroke="#edf5d9" stroke-width="2.5" opacity=".75"/></symbol>`;
   }).join("");
-  const platePetals = Array.from({ length: 12 }, (_, i) => `<g transform="rotate(${i * 30} 50 50)"><path d="M48 6q-6 6 2 10 8-4 2-10l-2 5Z" fill="#32658c"/><circle cx="50" cy="18" r="1" fill="#a99564"/></g>`).join("");
+  const platePetals = Array.from({ length: 12 }, (_, i) => `<g transform="rotate(${i * 30} 50 50)"><ellipse cx="50" cy="28" rx="9" ry="15" fill="none" stroke="#aeb6b9" stroke-width=".7"/><circle cx="50" cy="11" r="1.4" fill="#7c8f9e"/></g>`).join("");
+  const avatarMe = '<circle cx="40" cy="40" r="38" fill="#ffc76f"/><path d="M17 31L19 10L35 25M46 25L62 10L64 33" fill="#ec8f4f" stroke="#9b613c" stroke-width="2"/><ellipse cx="40" cy="43" rx="27" ry="25" fill="#eea163"/><ellipse cx="40" cy="50" rx="19" ry="15" fill="#fff0ce"/><circle cx="29" cy="39" r="3.2" fill="#463f3b"/><circle cx="51" cy="39" r="3.2" fill="#463f3b"/><path d="M35 48Q40 44 45 48L40 53Z" fill="#69483b"/><path d="M30 55Q40 64 50 55" fill="none" stroke="#69483b" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="47" r="5" fill="#ef8867"/><circle cx="60" cy="47" r="5" fill="#ef8867"/>';
+  const avatarRival = '<circle cx="40" cy="40" r="38" fill="#9dc6cd"/><path d="M40 10V20" stroke="#466c86" stroke-width="4"/><circle cx="40" cy="9" r="4" fill="#ffcf6b"/><rect x="14" y="23" width="52" height="43" rx="15" fill="#e7eee4" stroke="#5a8298" stroke-width="3"/><rect x="20" y="31" width="40" height="22" rx="8" fill="#336b83"/><circle cx="30" cy="41" r="4" fill="#9dedde"/><circle cx="50" cy="41" r="4" fill="#9dedde"/><path d="M32 59H48" stroke="#779b9f" stroke-width="3" stroke-linecap="round"/><path d="M8 36V50M72 36V50" stroke="#5d8d9f" stroke-width="5" stroke-linecap="round"/>';
   const definitions = `<svg class="azul-art-definitions" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs>
     <linearGradient id="azul-shine" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <radialGradient id="azul-porcelain" cx=".34" cy=".24" r=".8"><stop stop-color="#fffdf0"/><stop offset=".7" stop-color="#e8e7d3"/><stop offset="1" stop-color="#b6c6c6"/></radialGradient>
+    <radialGradient id="azul-porcelain" cx=".34" cy=".24" r=".8"><stop stop-color="#f3f1e5"/><stop offset=".7" stop-color="#d8ded7"/><stop offset="1" stop-color="#a1adb7"/></radialGradient>
     ${tileSymbols}
-    <symbol id="azul-tile-empty" viewBox="0 0 80 80"><rect x="3" y="3" width="74" height="74" rx="7" fill="#dfdfd0" stroke="#b9c0b6" stroke-width="2"/><rect x="8" y="8" width="64" height="64" rx="4" fill="none" stroke="#f8f6e4" stroke-width="2" opacity=".7"/><path d="M40 30q-12 4-10 10 4 12 10 10 12-4 10-10-4-12-10-10Z" fill="none" stroke="#aebcb3" stroke-width="1.8" opacity=".45"/></symbol>
-    <symbol id="azul-plate" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49" fill="url(#azul-porcelain)" stroke="#f6ead0" stroke-width="1.5"/><circle cx="50" cy="50" r="45" fill="none" stroke="#376e90" stroke-width="1.3"/>${platePetals}<circle cx="50" cy="50" r="30.5" fill="none" stroke="#a3b7ba" stroke-width="1"/><circle cx="50" cy="50" r="28" fill="#e4e8dc" stroke="#cbd3c6" stroke-width=".7"/><path d="M29 52q21-15 42 0M35 58q15-11 30 0" fill="none" stroke="#bacac6" stroke-width="1.3" opacity=".7"/></symbol>
+    <symbol id="azul-tile-empty" viewBox="0 0 80 80"><rect x="2" y="2" width="76" height="76" rx="9" fill="#d5d6d3"/><path d="M3 65v5a7 7 0 0 0 7 7h60a7 7 0 0 0 7-7v-5" fill="none" stroke="#a8afae" stroke-width="2"/><path d="M8 3h64a5 5 0 0 1 5 5v10" fill="none" stroke="#eeeeea" stroke-width="2.5"/></symbol>
+    <symbol id="azul-plate" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49" fill="url(#azul-porcelain)" stroke="#667d96" stroke-width="1.7"/><circle cx="50" cy="50" r="45.5" fill="none" stroke="#eef0e4" stroke-width="3"/><circle cx="50" cy="50" r="43" fill="none" stroke="#8d9caf" stroke-width="1"/><circle cx="50" cy="50" r="36" fill="none" stroke="#8196a8" stroke-width="1"/><circle cx="50" cy="50" r="32.5" fill="none" stroke="#b2bfc3" stroke-width=".7"/>${platePetals}<circle cx="50" cy="50" r="10" fill="none" stroke="#879baf" stroke-width="1.5"/><circle cx="50" cy="50" r="7" fill="none" stroke="#bdc9cb" stroke-width="1"/></symbol>
+    <symbol id="azul-avatar-me" viewBox="0 0 80 80">${avatarMe}</symbol><symbol id="azul-avatar-rival" viewBox="0 0 80 80">${avatarRival}</symbol>
     <symbol id="azul-corner" viewBox="0 0 40 40"><path d="M3 37V3h34M7 32V7h25" fill="none" stroke="#476d85" stroke-width="1"/><path d="M9 9c16 1 20 6 15 12-1-8-8-9-9-4 7 3 6 8 1 8-5-1-8-6-7-16Z" fill="#718f9d"/><circle cx="8" cy="8" r="2" fill="#c4a566"/></symbol>
     <symbol id="azul-rosette" viewBox="0 0 80 80">${patterns.white}</symbol>
   </defs></svg>`;
@@ -1071,7 +1193,7 @@ self.onmessage = function (event) {
     return `<span class="tile ${name}${ghost ? " ghost" : ""}" aria-hidden="true">${svg(`tile-${name}`, "tile-art")}</span>`;
   }
   function frame() { return `<span class="board-corners" aria-hidden="true">${["nw", "ne", "se", "sw"].map(corner => svg("corner", `board-corner ${corner}`)).join("")}</span>`; }
-  root.AzulArt = { render, frame, plate: () => svg("plate", "plate-art"), rosette: () => svg("rosette", "rosette-art") };
+  root.AzulArt = { render, frame, plate: () => svg("plate", "plate-art"), rosette: () => svg("rosette", "rosette-art"), avatar: player => svg(`avatar-${player === "me" ? "me" : "rival"}`, "player-portrait") };
   document.body.insertAdjacentHTML("afterbegin", definitions);
   document.querySelectorAll(".hero-mark i").forEach((el, i) => { el.innerHTML = render(colors[[0, 1, 4, 2, 3, 0, 4, 1, 2][i]]); });
   document.querySelectorAll(".difficulty-symbol").forEach((el, i) => { el.innerHTML = render(["blue", "yellow", "black"][i]); });
@@ -1541,13 +1663,14 @@ self.onmessage = function (event) {
     game.phase = "playing";
     restartClock(game);
   }
-  function createGame({ level = "medium", first = "me", seed = Date.now(), turnSeconds = 90 } = {}) {
+  function createGame({ level = "medium", first = "me", seed = Date.now(), turnSeconds = 90, mode = "standard", opponent = mode === "race" ? "local" : "ai" } = {}) {
     const game = {
       version: 1, position: E.createState(2), bag: [], discard: [],
       floorTiles: { me: [], rival: [] }, rng: seed >>> 0, round: 1,
       phase: "playing", turn: first, tokenOwner: first,
       level, log: [], summary: null, winner: null, markerSlot: null,
       turnSeconds: turnSeconds === 60 ? 60 : 90, turnDeadline: null, turnRemainingMs: null,
+      mode: mode === "race" ? "race" : "standard", opponent: opponent === "local" ? "local" : "ai", raceWinner: null,
     };
     game.bag = shuffle(game, E.COLORS.flatMap((color) => Array(20).fill(color)));
     if (first === "random") game.turn = game.tokenOwner = random(game) < 0.5 ? "me" : "rival";
@@ -1569,6 +1692,8 @@ self.onmessage = function (event) {
     const total = Math.max(0, board.score + projection.net);
     return { ...projection, before: board.score, total, gain: total - board.score };
   }
+  function wallCount(board) { return board.wall.flat().filter(Boolean).length; }
+  function playerName(game, player) { return game.opponent === "local" ? (player === "me" ? "玩家 1" : "玩家 2") : player === "me" ? "你" : "人机"; }
   function settleRound(game) {
     if (game.phase !== "playing") return game.summary;
     const summary = {};
@@ -1593,20 +1718,22 @@ self.onmessage = function (event) {
     game.markerSlot = null;
     game.turnDeadline = null;
     game.turnRemainingMs = null;
-    if (bonuses.me.rows || bonuses.rival.rows) {
+    const race = game.mode === "race";
+    const filled = { me: wallCount(game.position.me), rival: wallCount(game.position.rival) };
+    if (race ? filled.me === 25 || filled.rival === 25 : bonuses.me.rows || bonuses.rival.rows) {
       for (const player of ["me", "rival"]) {
-        summary[player].bonus = bonuses[player].points;
-        game.position[player].score += bonuses[player].points;
+        summary[player].bonus = race ? 0 : bonuses[player].points;
+        game.position[player].score += summary[player].bonus;
         summary[player].total = game.position[player].score;
       }
       const diff = game.position.me.score - game.position.rival.score;
       const rowDiff = bonuses.me.rows - bonuses.rival.rows;
-      game.winner = diff ? (diff > 0 ? "me" : "rival") : rowDiff ? (rowDiff > 0 ? "me" : "rival") : "tie";
+      game.winner = race ? (game.raceWinner || (filled.me === 25 && filled.rival === 25 ? "tie" : filled.me === 25 ? "me" : "rival")) : diff ? (diff > 0 ? "me" : "rival") : rowDiff ? (rowDiff > 0 ? "me" : "rival") : "tie";
       game.phase = "finished";
-      addLog(game, `对局结束：你 ${summary.me.total} 分，人机 ${summary.rival.total} 分，已计入横行、纵列与同色奖励。`);
+      addLog(game, race ? `${game.winner === "tie" ? "双方" : playerName(game, game.winner)}完成 25 格花砖墙，满墙竞速结束。` : `对局结束：你 ${summary.me.total} 分，人机 ${summary.rival.total} 分，已计入横行、纵列与同色奖励。`);
     } else {
       game.phase = "roundEnd";
-      addLog(game, `第${game.round}轮结算：你 ${beforeAfter(summary.me)}；人机 ${beforeAfter(summary.rival)}。`);
+      addLog(game, race ? `第${game.round}轮贴墙：${playerName(game, "me")} ${filled.me}/25 格；${playerName(game, "rival")} ${filled.rival}/25 格，继续竞速。` : `第${game.round}轮结算：你 ${beforeAfter(summary.me)}；人机 ${beforeAfter(summary.rival)}。`);
     }
     return summary;
   }
@@ -1621,9 +1748,12 @@ self.onmessage = function (event) {
     game.position = result.state;
     if (result.tookMarker) { game.tokenOwner = player; game.markerSlot = markerSlot; }
     game.floorTiles[player].push(...Array(result.overflow).fill(legal.color));
-    addLog(game, `${player === "me" ? "你" : "人机"}从${describeMove(legal)}${result.tookMarker ? "，取得先手" : ""}。`);
+    addLog(game, `${playerName(game, player)}从${describeMove(legal)}${result.tookMarker ? "，取得先手" : ""}。`);
     game.turn = other(player);
-    if (!E.sources(game.position).length) settleRound(game);
+    if (game.mode === "race" && E.projectBoard(game.position[player]).wall.flat().every(Boolean)) {
+      game.raceWinner = player;
+      settleRound(game);
+    } else if (!E.sources(game.position).length) settleRound(game);
     else restartClock(game);
     return game;
   }
@@ -1647,7 +1777,7 @@ self.onmessage = function (event) {
     }
     return counts;
   }
-  root.AzulGame = { createGame, playMove, nextRound, settleRound, roundScore, inventory, describeMove, sameMove, other, remainingTime, restartClock, pauseClock, resumeClock };
+  root.AzulGame = { createGame, playMove, nextRound, settleRound, roundScore, wallCount, playerName, inventory, describeMove, sameMove, other, remainingTime, restartClock, pauseClock, resumeClock };
 })(globalThis);
 
 </script>
@@ -2039,32 +2169,43 @@ self.onmessage = function (event) {
   function save() { try { localStorage.setItem(KEY, JSON.stringify(game)); } catch (_) { /* 继续本局 */ } }
   function esc(text) { return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
   function tile(color, ghost = false) { return globalThis.AzulArt.render(color, ghost); }
-  function myTurn() { return game?.phase === "playing" && game.turn === "me" && !busy; }
+  function localDuel() { return game?.opponent === "local"; }
+  function humanPlayer() { return localDuel() ? game.turn : "me"; }
+  function playerName(player) { return localDuel() ? G.playerName(game, player) : player === "me" ? "你" : AI.LEVELS[game.level].name; }
+  function matchLabel() { return game.mode === "race" ? "双人满墙竞速" : `${AI.LEVELS[game.level].name} · 经典人机`; }
+  function myTurn() { return game?.phase === "playing" && (localDuel() || game.turn === "me") && !busy; }
   function isSelected(kind, index, color) { return selection && selection.kind === kind && selection.index === index && selection.color === color; }
   function preview() {
     if (!selection || pendingRow === undefined) return null;
-    const applied = E.applyMove(game.position, { ...selection, row: pendingRow }, "me");
-    const before = E.projectBoard(game.position.me), after = E.projectBoard(applied.state.me);
+    const player = humanPlayer();
+    const applied = E.applyMove(game.position, { ...selection, row: pendingRow }, player);
+    const before = E.projectBoard(game.position[player]), after = E.projectBoard(applied.state[player]);
     return { ...applied, wallGain: after.wallPoints - before.wallPoints, cost: after.floorPoints - before.floorPoints };
   }
   function renderMarket() {
     const p = game.position;
-    const factories = p.factories.map((factory, index) => `<div class="game-factory ${selection?.kind === "factory" && selection.index === index ? "plate-selected" : ""}">${globalThis.AzulArt.plate()}<span class="factory-index">${String(index + 1).padStart(2, "0")}</span><div class="game-factory-tiles">${factory.map((color) => `<button type="button" class="game-tile ${color ? "" : "void"} ${isSelected("factory", index, color) ? "chosen" : ""}" data-game-source="factory" data-game-index="${index}" data-game-color="${color || ""}" ${!myTurn() || !color ? "disabled" : ""} aria-label="从第${index + 1}工厂选择${color ? E.COLOR_NAMES[color] : "空"}砖">${tile(color)}</button>`).join("")}</div></div>`).join("");
-    const center = E.COLORS.map((color) => `<button type="button" class="center-pick ${isSelected("center", -1, color) ? "chosen" : ""}" data-game-source="center" data-game-index="-1" data-game-color="${color}" ${!myTurn() || !p.center[color] ? "disabled" : ""} aria-label="从中央区选择${E.COLOR_NAMES[color]}砖${p.center[color]}块">${tile(color)}<b>${p.center[color]}</b></button>`).join("");
-    return `<section class="game-market" aria-label="公共牌面"><div class="market-heading"><span>公共圆盘</span><small>牌袋 ${game.bag.length} · 弃砖 ${game.discard.length}</small></div><div class="game-factories">${factories}</div><div class="game-center"><div class="center-heading"><span>中央区</span><i class="token-badge">${p.firstPlayerToken ? "① 首位取砖者先手" : `① 下轮${game.tokenOwner === "me" ? "你" : "对手"}先手`}</i></div><div class="center-colors">${center}</div></div><div class="latest-move"><span>上一步</span>${esc(game.log[0] || "花砖已就绪，选一组心仪的颜色。")}</div></section>`;
+    const factories = p.factories.map((factory, index) => `<div class="game-factory ${selection?.kind === "factory" && selection.index === index ? "plate-selected" : ""}">${globalThis.AzulArt.plate()}<span class="factory-index">${index + 1}</span><div class="game-factory-tiles">${factory.map((color) => `<button type="button" class="game-tile ${color ? "" : "void"} ${isSelected("factory", index, color) ? "chosen" : ""}" data-game-source="factory" data-game-index="${index}" data-game-color="${color || ""}" ${!myTurn() || !color ? "disabled" : ""} aria-label="从第${index + 1}工厂选择${color ? E.COLOR_NAMES[color] : "空"}砖">${tile(color)}</button>`).join("")}</div></div>`).join("");
+    const center = E.COLORS.filter(color => p.center[color] > 0).map((color) => `<button type="button" class="center-pick ${isSelected("center", -1, color) ? "chosen" : ""}" data-game-source="center" data-game-index="-1" data-game-color="${color}" ${!myTurn() ? "disabled" : ""} aria-label="从中央区选择${E.COLOR_NAMES[color]}砖${p.center[color]}块">${tile(color)}<span class="count-prefix">×</span><b>${p.center[color]}</b></button>`).join("");
+    return `<section class="game-market" aria-label="公共牌面">
+      <div class="market-heading"><span>公共区</span><small>袋 ${game.bag.length} · 弃 ${game.discard.length} · ${p.firstPlayerToken ? "① 先取者获下轮先手" : `① 下轮${playerName(game.tokenOwner)}先手`}</small></div>
+      <div class="market-time-gauge" aria-hidden="true"><span class="market-time-track"><i class="market-time-fill" style="height:0%"></i></span><b class="market-clock">${Math.ceil(G.remainingTime(game) / 1000)}</b><small>秒</small></div>
+      <div class="game-factories">${factories}</div>
+      <div class="pool-sidebar"><div class="game-center"><div class="center-heading"><span>公共牌堆</span></div><div class="center-colors">${center || '<p class="center-empty">圆盘余砖<br>会移到这里</p>'}</div></div><div class="pool-selection"><span>已选砖块</span><div>${selection ? `${tile(selection.color)}<b>×${selection.count}</b>` : '<small>等待选砖</small>'}</div></div></div>
+      <div class="latest-move"><span>上一步</span>${esc(game.log[0] || "从一个圆盘或公共牌堆选择同色花砖。")}</div>
+    </section>`;
   }
   function renderBoard(player) {
-    const b = game.position[player], mine = player === "me";
-    const plan = mine ? preview() : null;
+    const b = game.position[player], mine = player === "me", editable = humanPlayer() === player;
+    const plan = editable ? preview() : null;
     const tally = G.roundScore(b);
     const rows = b.lines.map((line, row) => {
-      const legal = mine && myTurn() && selection && E.canPlace(b, row, selection.color);
+      const legal = editable && myTurn() && selection && E.canPlace(b, row, selection.color);
       const planned = legal && pendingRow === row;
       const fit = legal ? Math.min(selection.count, row + 1 - line.count) : 0;
       const target = legal ? E.wallColumn(row, selection.color) : -1;
       const cells = Array.from({ length: row + 1 }, (_, i) => tile(i < line.count ? line.color : planned && i < line.count + fit ? selection.color : null, planned && i >= line.count && i < line.count + fit)).join("");
-      const inner = `<span class="line-number">${row + 1}</span><span class="line-cells">${cells}</span><span class="row-hint">${legal ? (planned ? "✓" : `+${fit}`) : line.count === row + 1 ? "✓" : ""}</span>`;
-      const left = mine ? `<button type="button" class="battle-line ${legal ? "legal" : ""} ${planned ? "planned" : ""}" data-game-row="${row}" ${legal ? "" : "disabled"} aria-label="放入第${row + 1}行" aria-pressed="${Boolean(planned)}">${inner}</button>` : `<div class="battle-line">${inner}</div>`;
+      const inner = `<span class="line-number">${row + 1}</span><span class="line-cells">${cells}</span><span class="row-hint">${legal ? (planned ? "✓" : `+${fit}`) : line.count === row + 1 ? "✓" : "▸"}</span>`;
+      const left = editable ? `<button type="button" class="battle-line ${legal ? "legal" : ""} ${planned ? "planned" : ""}" data-game-row="${row}" ${legal ? "" : "disabled"} aria-label="放入第${row + 1}行" aria-pressed="${Boolean(planned)}">${inner}</button>` : `<div class="battle-line">${inner}</div>`;
       const last = game.lastMove?.player === player && game.lastMove.row === row && game.phase === "playing";
       return `<div class="battle-row ${last ? "last-placement" : ""}">${left}<div class="battle-wall-row">${b.wall[row].map((filled, col) => `<span class="battle-wall-cell ${filled ? "filled" : ""} ${!filled && line.count === row + 1 && E.wallColumn(row, line.color) === col ? "pending-wall" : ""} ${col === target ? "target" : ""} ${planned && col === target ? "planned-target" : ""}" title="${E.COLOR_NAMES[E.WALL_PATTERN[row][col]]}${filled ? "，已贴" : "，未贴"}">${tile(E.WALL_PATTERN[row][col])}</span>`).join("")}</div></div>`;
     }).join("");
@@ -2073,24 +2214,35 @@ self.onmessage = function (event) {
     const oldCount = b.floor;
     if (plan) { if (plan.tookMarker) floor.splice(oldCount, 0, "marker"); floor.push(...Array(plan.overflow).fill(selection.color)); }
     const floorHtml = E.FLOOR_COSTS.map((cost, i) => `<span class="floor-slot ${plan && i >= oldCount && floor[i] ? "floor-preview" : ""}">${floor[i] === "marker" ? '<span class="marker-tile">1</span>' : tile(floor[i], Boolean(plan && i >= oldCount && floor[i]))}<small>−${cost}</small></span>`).join("");
-    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${mine ? "你的棋盘" : "对手棋盘"}">${globalThis.AzulArt.frame()}<div class="battle-board-header"><div><i class="board-avatar">${mine ? "你" : "机"}</i><h3>${mine ? "你的花砖墙" : `${AI.LEVELS[game.level].name}的花砖墙`}</h3></div><span class="board-round" title="已完成的图案线在公共池取空后统一贴墙计分">贴墙 +${tally.wallPoints} · 地板 −${tally.floorPoints}</span></div><div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor"><div class="floor-heading">${mine ? `<button class="floor-drop ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"} aria-label="全部放入地板">地板 ↘</button>` : "<span>地板线</span>"}<b>−${E.floorPenalty(b.floor)} 分</b></div><div class="floor-slots">${floorHtml}</div></div></div></section>`;
+    const gain = game.phase === "playing" ? tally.gain : (game.summary?.[player]?.gain || 0) + (game.summary?.[player]?.bonus || 0);
+    const floorSlots = `<div class="floor-slots">${floorHtml}</div>`;
+    const floorZone = editable ? `<button class="floor-zone ${pendingRow === null ? "planned" : ""}" type="button" data-game-drop="true" ${myTurn() && selection ? "" : "disabled"} aria-label="全部放入地板" title="将所选花砖全部放入地板，当前扣 ${E.floorPenalty(b.floor)} 分">${floorSlots}</button>` : `<div class="floor-zone" aria-label="对手地板线，当前扣 ${E.floorPenalty(b.floor)} 分">${floorSlots}</div>`;
+    return `<section class="battle-board ${mine ? "my-board" : "ai-board"} ${game.phase === "playing" && game.turn === player ? "active" : ""}" aria-label="${localDuel() ? `${playerName(player)}的棋盘` : mine ? "你的棋盘" : "对手棋盘"}">
+      <div class="battle-board-header"><div><i class="board-avatar">${globalThis.AzulArt.avatar(player)}</i><h3>${playerName(player)}</h3></div><span class="board-round">贴墙 +${tally.wallPoints} · 地板 −${tally.floorPoints}</span></div>
+      <div class="board-body"><div class="battle-board-legend"><span>图案线</span><span>花砖墙</span></div>${rows}<div class="battle-floor">${floorZone}<div class="board-score ${game.mode === "race" ? "race-progress" : ""}" aria-label="${playerName(player)}${game.mode === "race" ? `已完成 ${G.wallCount(b)} / 25 格` : `已结算 ${b.score} 分，本轮 ${signed(gain)}`} ${game.mode === "race" ? `，待贴 ${tally.placements.length} 格` : ""}"><span>${game.mode === "race" ? "▦" : "★"}</span><strong data-board-score-total="${player}">${game.mode === "race" ? `${G.wallCount(b)}<em>/25</em>` : b.score}</strong><small>${game.mode === "race" ? `待贴 ${tally.placements.length} 格` : `${game.phase === "playing" ? "待" : "本轮"}${signed(gain)}`}</small></div></div></div>
+    </section>`;
   }
   function renderDock() {
     if (game.phase !== "playing") return "";
     if (!myTurn()) return `<div class="action-dock ai-thinking"><div class="dock-symbol"><span class="thinking-dot"></span></div><div class="dock-copy"><b>${AI.LEVELS[game.level].name}正在推演局面</b><span class="ai-clock">观察相邻、卡位与轮末余砖…</span></div><div class="thinking-bars"><i></i><i></i><i></i></div></div>`;
-    if (!selection) return `<div class="action-dock"><div class="dock-symbol">✦</div><div class="dock-copy"><b>轮到你了，先选一组花砖</b><span>点击公共圆盘或中央区的任一颜色</span></div><span class="dock-step">01 / 选砖</span></div>`;
+    if (!selection) return `<div class="action-dock"><div class="dock-symbol">✦</div><div class="dock-copy"><b>${localDuel() ? `${playerName(game.turn)} 回合，先选一组花砖` : "轮到你了，先选一组花砖"}</b><span>点击公共圆盘或中央区的任一颜色</span></div><span class="dock-step">01 / 选砖</span></div>`;
     const plan = preview();
     return `<div class="action-dock has-selection"><div class="dock-picked">${tile(selection.color)}<b>×${selection.count}</b></div><div class="dock-copy"><b>${pendingRow === undefined ? "选择一条高亮图案线" : pendingRow === null ? "全部放入地板" : `放入第 ${pendingRow + 1} 行`}</b><span>${plan ? `贴墙 +${plan.wallGain} · 地板 −${plan.cost}${plan.overflow ? ` · 溢出 ${plan.overflow} 块` : ""}` : "选好落点后，再确认落砖"}</span></div><button class="dock-cancel" type="button" data-game-cancel="true" aria-label="取消选择">×</button><button class="primary-button confirm-move" type="button" data-game-confirm="true" ${pendingRow === undefined ? "disabled" : ""}>确认落砖 <span>→</span></button></div>`;
   }
   function renderResults() {
     if (game.phase === "playing") return "";
-    const finished = game.phase === "finished";
-    const title = finished ? game.winner === "tie" ? "平分秋色" : game.winner === "me" ? "这一局，你更胜一筹" : "好对手，值得再来一局" : `第 ${game.round} 轮 · 贴墙结算`;
-    return `<div class="results-scrim"><section class="round-summary" role="dialog" aria-modal="true" aria-labelledby="result-title"><div class="result-emblem">${finished ? "✦" : "◇"}</div><span class="section-kicker">${finished ? "GAME COMPLETE" : "ROUND COMPLETE"}</span><h3 id="result-title">${title}</h3><div class="result-scores"><div><span>你</span><b>${game.position.me.score}</b></div><i>:</i><div><span>${AI.LEVELS[game.level].name}</span><b>${game.position.rival.score}</b></div></div><div class="result-breakdown">${["me", "rival"].map((p) => { const s = game.summary[p]; return `<div class="settled-player"><p><b>${p === "me" ? "你" : "对手"}</b><strong>${s.before ?? game.position[p].score - s.gain - s.bonus} → ${game.position[p].score} 分</strong><em>本轮 ${signed(s.gain + s.bonus)}</em></p><p class="settled-detail"><span>贴墙 +${s.wallPoints}</span><span>地板 −${s.floorPoints}</span>${finished ? `<span>奖励 +${s.bonus}</span>` : ""}</p></div>`; }).join("")}</div><p class="scoring-note">双方同时结算；未满的图案线留到下轮，总分最低为 0。</p>${finished ? `<button type="button" class="primary-button" data-game-restart="true">同一强度，再来一局 ↗</button>` : `<button type="button" class="primary-button" data-game-next="true">进入第 ${game.round + 1} 轮 →</button>`}<button class="result-back" type="button" data-game-home="true">返回大厅</button></section></div>`;
+    const finished = game.phase === "finished", race = game.mode === "race";
+    const title = finished ? race ? game.winner === "tie" ? "双方完成满墙" : `${playerName(game.winner)}先铺满了整面墙` : game.winner === "tie" ? "平分秋色" : game.winner === "me" ? "这一局，你更胜一筹" : "好对手，值得再来一局" : `第 ${game.round} 轮 · 贴墙结算`;
+    const scores = ["me", "rival"].map(p => `<div><span>${playerName(p)}</span><b>${race ? `${G.wallCount(game.position[p])}<small>/25</small>` : game.position[p].score}</b></div>`).join('<i>:</i>');
+    const breakdown = ["me", "rival"].map(p => {
+      const t = game.summary[p];
+      return race ? `<div class="settled-player"><p><b>${playerName(p)}</b><strong>已铺满 ${G.wallCount(game.position[p])} 格</strong><em>本轮贴墙 ${t.placements?.length || 0} 格</em></p></div>` : `<div class="settled-player"><p><b>${playerName(p)}</b><strong>${t.before ?? game.position[p].score - t.gain - t.bonus} → ${game.position[p].score} 分</strong><em>本轮 ${signed(t.gain + t.bonus)}</em></p><p class="settled-detail"><span>贴墙 +${t.wallPoints}</span><span>地板 −${t.floorPoints}</span>${finished ? `<span>奖励 +${t.bonus}</span>` : ""}</p></div>`;
+    }).join("");
+    return `<div class="results-scrim"><section class="round-summary" role="dialog" aria-modal="true" aria-labelledby="result-title"><div class="result-emblem">${finished ? "✦" : "◇"}</div><span class="section-kicker">${race ? "满墙竞速" : finished ? "GAME COMPLETE" : "ROUND COMPLETE"}</span><h3 id="result-title">${title}</h3><div class="result-scores">${scores}</div><div class="result-breakdown">${breakdown}</div><p class="scoring-note">${race ? "不限轮次，先完成整面 25 格花砖墙者获胜，积分不影响胜负。" : "双方同时结算；未满的图案线留到下轮，总分最低为 0。"}</p>${finished ? `<button type="button" class="primary-button" data-game-restart="true">${race ? "同玩法再来一局" : "同一强度，再来一局"} ↗</button>` : `<button type="button" class="primary-button" data-game-next="true">进入第 ${game.round + 1} 轮 →</button>`}<button class="result-back" type="button" data-game-home="true">返回大厅</button></section></div>`;
   }
   function renderDrawer() {
     if (!overlay) return "";
-    return `<div class="drawer-scrim"><section class="table-drawer" role="dialog" aria-modal="true" aria-label="${overlay === "log" ? "对局记录" : "玩法规则"}"><div class="drawer-heading"><h3>${overlay === "log" ? "对局记录" : "玩法规则"}</h3><button type="button" data-game-close="true" aria-label="关闭面板">×</button></div>${overlay === "log" ? `<ol class="match-history">${game.log.length ? game.log.map((line) => `<li>${esc(line)}</li>`).join("") : "<li>新对局已经准备好。</li>"}</ol>` : `<div class="quick-rules"><h4>01 选砖</h4><p>从一个圆盘或中央区，拿走全部同色花砖。取走圆盘里的一种颜色后，剩余花砖进入中央区。</p><h4>02 落砖</h4><p>一组砖只能放入一条图案线。图案线只收同色砖；对应墙行已有该颜色时不能再放。多余的砖进入地板扣分。</p><h4>03 贴墙</h4><p>双方在公共花砖取完后同时结算。完整图案线各贴一块到墙上，横、竖相连分别得分，再扣除地板分。总分最低为 0。不完整的图案线留到下一轮，不立即得分。顶部“待结算”为当前局面的本轮净变化，尚未入账。</p><h4>04 倒计时</h4><p>每手限时 ${game.turnSeconds || 90} 秒，出手后重新计时。超时优先执行已选的合法落点；未选好时由本地算法代走一步。返回大厅暂停计时，刷新页面继续当前计时。</p><h4>05 胜负</h4><p>任一玩家贴满一横行，本轮结束后结算。每条完整横行 +2，纵列 +7，同色五块 +10。总分相同时，完整横行较多者胜。</p></div>`}</section></div>`;
+    return `<div class="drawer-scrim"><section class="table-drawer" role="dialog" aria-modal="true" aria-label="${overlay === "log" ? "对局记录" : "玩法规则"}"><div class="drawer-heading"><h3>${overlay === "log" ? "对局记录" : "玩法规则"}</h3><button type="button" data-game-close="true" aria-label="关闭面板">×</button></div>${overlay === "log" ? `<ol class="match-history">${game.log.length ? game.log.map((line) => `<li>${esc(line)}</li>`).join("") : "<li>新对局已经准备好。</li>"}</ol>` : `<div class="quick-rules">${game.mode === "race" ? "<h4>双人满墙竞速</h4><p>同一部手机，两人轮流操作。先填满整面 25 格花砖墙者获胜，不限轮次。最后所需图案线完成时立即贴墙判胜，不必等公共池取完。</p>" : ""}<h4>01 选砖</h4><p>从一个圆盘或中央区，拿走全部同色花砖。取走圆盘里的一种颜色后，剩余花砖进入中央区。</p><h4>02 落砖</h4><p>一组砖只能放入一条图案线。图案线只收同色砖；对应墙行已有该颜色时不能再放。多余的砖进入地板扣分。</p><h4>03 贴墙</h4><p>双方在公共花砖取完后同时结算。完整图案线各贴一块到墙上，横、竖相连分别得分，再扣除地板分。总分最低为 0。不完整的图案线留到下一轮，不立即得分。棋盘底部“待”为本轮尚未入账的净分；竞速玩法显示待贴格数。</p><h4>04 倒计时</h4><p>每手限时 ${game.turnSeconds || 90} 秒，出手后重新计时。超时优先执行已选的合法落点；未选好时由本地算法代走一步。返回大厅暂停计时，刷新页面继续当前计时。</p><h4>05 胜负</h4><p>${game.mode === "race" ? "贴满一横行仍继续，直到一方先完成整面墙。积分仅作记录，不决定竞速胜负。" : "任一玩家贴满一横行，本轮结束后结算。每条完整横行 +2，纵列 +7，同色五块 +10。总分相同时，完整横行较多者胜。"}</p></div>`}</section></div>`;
   }
   function renderClock() {
     return game.phase === "playing" ? `<span class="turn-timer"><i aria-hidden="true">◷</i><time class="turn-clock" aria-label="本手剩余时间">${clockText()}</time></span><span class="turn-progress" aria-hidden="true"><i></i></span>` : '<span class="clock-settled">双方已结算</span>';
@@ -2103,19 +2255,26 @@ self.onmessage = function (event) {
     if (!game || location.hash !== "#match" || game.phase !== "playing") return;
     const remaining = G.remainingTime(game), label = $(".turn-clock"), progress = $(".turn-progress i");
     if (label) label.textContent = clockText();
-    if (progress) progress.style.width = `${Math.min(100, remaining / ((game.turnSeconds || 90) * 10))}%`;
+    const percent = Math.min(100, remaining / ((game.turnSeconds || 90) * 10));
+    if (progress) progress.style.width = `${percent}%`;
+    const gauge = $(".market-time-fill"), gaugeClock = $(".market-clock");
+    if (gauge) gauge.style.height = `${percent}%`;
+    if (gaugeClock) gaugeClock.textContent = String(Math.ceil(remaining / 1000));
     $(".duel-score")?.classList.toggle("clock-urgent", remaining <= 10000);
+    $(".game-market")?.classList.toggle("clock-urgent", remaining <= 10000);
     if (!remaining && myTurn()) {
       const preferred = selection && pendingRow !== undefined ? { ...selection, row: pendingRow } : null;
-      const move = E.legalMoves(game.position, "me").find(candidate => preferred && G.sameMove(candidate, preferred)) || AI.chooseMove(game.position, "me", "medium", { tokenOwner: game.tokenOwner }).move;
+      const player = humanPlayer();
+      const move = E.legalMoves(game.position, player).find(candidate => preferred && G.sameMove(candidate, preferred)) || AI.chooseMove(game.position, player, "medium", { tokenOwner: game.tokenOwner }).move;
       if (move) commitHumanMove(move, true);
     }
   }
   function commitHumanMove(move, timedOut = false) {
-    game.lastMove = { ...move, player: "me" };
+    const player = humanPlayer();
+    game.lastMove = { ...move, player };
     G.playMove(game, move);
     if (timedOut) {
-      game.log.unshift("本手倒计时结束，已自动执行合法落砖。");
+      game.log.unshift(`${playerName(player)}本手倒计时结束，已自动执行合法落砖。`);
       game.log = game.log.slice(0, 40);
     }
     selection = null; pendingRow = undefined; save(); render();
@@ -2124,31 +2283,44 @@ self.onmessage = function (event) {
   function renderScore(player) {
     const mine = player === "me", board = game.position[player];
     const score = G.roundScore(board), settled = game.phase !== "playing";
+    if (game.mode === "race") return `<div class="duelist ${mine ? "mine" : "opponent"}" aria-label="${playerName(player)}满墙进度" aria-live="polite"><span class="duelist-avatar">${mine ? "1" : "2"}</span><div class="duelist-info"><b>${playerName(player)}进度</b><small class="score-pending">${settled ? "已贴墙" : `待贴 ${score.placements.length} 格`}</small></div><strong>${G.wallCount(board)}<small>/25</small></strong></div>`;
     const gain = settled ? (game.summary?.[player]?.gain || 0) + (game.summary?.[player]?.bonus || 0) : score.gain;
-    return `<div class="duelist ${mine ? "mine" : "opponent"}" aria-label="${mine ? "你的计分" : "对手计分"}" aria-live="polite"><span class="duelist-avatar">${mine ? "你" : "机"}</span><div class="duelist-info"><b>${mine ? "你的总分" : "对手总分"}</b><small class="score-pending" title="${settled ? "本轮分数已计入总分" : `公共池取空后统一入账，当前预计总分 ${score.total}`}" data-score-pending="${player}">${settled ? "本轮" : "待结算"} <em>${signed(gain)}</em>${settled ? " · 已入账" : ""}</small></div><strong data-score-total="${player}">${board.score}<small>分</small></strong></div>`;
+    return `<div class="duelist ${mine ? "mine" : "opponent"}" aria-label="${mine ? "你的计分" : "对手计分"}" aria-live="polite"><span class="duelist-avatar">${mine ? "你" : "机"}</span><div class="duelist-info"><b>${localDuel() ? `${playerName(player)}总分` : mine ? "你的总分" : "对手总分"}</b><small class="score-pending" title="${settled ? "本轮分数已计入总分" : `公共池取空后统一入账，当前预计总分 ${score.total}`}" data-score-pending="${player}">${settled ? "本轮" : "待结算"} <em>${signed(gain)}</em>${settled ? " · 已入账" : ""}</small></div><strong data-score-total="${player}">${board.score}<small>分</small></strong></div>`;
   }
   function render() {
-    $("#resume-slot").innerHTML = game ? `<button type="button" class="resume-button" data-game-resume="true"><span><b>${game.phase === "finished" ? "查看上一局" : "继续上次对局"}</b><small>${AI.LEVELS[game.level].name} · 第 ${game.round} 轮 · ${game.position.me.score} : ${game.position.rival.score}</small></span><i>→</i></button>` : "";
+    $("#resume-slot").innerHTML = game ? `<button type="button" class="resume-button" data-game-resume="true"><span><b>${game.phase === "finished" ? "查看上一局" : "继续上次对局"}</b><small>${matchLabel()} · 第 ${game.round} 轮 · ${game.mode === "race" ? `${G.wallCount(game.position.me)} : ${G.wallCount(game.position.rival)} 格` : `${game.position.me.score} : ${game.position.rival.score}`}</small></span><i>→</i></button>` : "";
     if (!game) { $("#match-content").innerHTML = ""; return; }
-    const status = game.phase === "finished" ? "对局结束" : game.phase === "roundEnd" ? "本轮结算" : game.turn === "me" ? "轮到你了" : "对手思考中";
-    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">${globalThis.AzulArt.rosette()}花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    const status = game.phase === "finished" ? "对局结束" : game.phase === "roundEnd" ? "本轮结算" : localDuel() ? `${playerName(game.turn)} 回合` : game.turn === "me" ? "轮到你了" : "对手思考中";
+    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">${globalThis.AzulArt.rosette()}花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${game.mode === "race" ? "满墙竞速" : AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
     updateClock();
-    if (location.hash === "#match" && game.phase === "playing" && game.turn === "rival" && !busy) runAI();
+    if (location.hash === "#match" && game.phase === "playing" && game.turn === "rival" && !localDuel() && !busy) runAI();
   }
   function cancelAI() {
     requestId++; clearTimeout(watchdog); clearInterval(ticker); fallbackPending = false;
     worker?.terminate(); worker = null; busy = false;
   }
   function start(replay = false) {
-    const previousLevel = game?.level;
+    const previous = game;
     cancelAI();
-    const level = replay && previousLevel ? previousLevel : document.querySelector('input[name="difficulty"]:checked').value;
-    game = G.createGame({ level, first: $("#game-first").value, turnSeconds: replay && game?.turnSeconds ? game.turnSeconds : Number($("#game-seconds").value) });
+    const mode = replay ? previous?.mode || "standard" : document.querySelector('input[name="variant"]:checked').value;
+    const level = replay && previous ? previous.level : document.querySelector('input[name="difficulty"]:checked').value;
+    game = G.createGame({ level, mode, opponent: mode === "race" ? "local" : "ai", first: $("#game-first").value, turnSeconds: replay && previous?.turnSeconds ? previous.turnSeconds : Number($("#game-seconds").value) });
     selection = null; pendingRow = undefined; overlay = null;
     save(); location.hash = "match"; showMode(); render();
   }
+  function syncSetup() {
+    const race = document.querySelector('input[name="variant"]:checked').value === "race";
+    $(".difficulty-options").classList.toggle("hidden", race);
+    $("#race-note").classList.toggle("hidden", !race);
+    $("#setup-kicker").textContent = race ? "WALL RACE / 满墙竞速" : "CLASSIC DUEL / 经典对局";
+    $("#setup-heading").textContent = race ? "谁先铺满整面墙？" : "这一局，想挑战谁？";
+    $("#setup-description").textContent = race ? "同机双人 · 不限轮次 · 先满 25 格获胜" : "本地算法对手 · 经典彩色墙 · 随时继续";
+    $("#game-first").options[0].textContent = race ? "玩家 1 先手" : "我先手";
+    $("#game-first").options[1].textContent = race ? "玩家 2 先手" : "人机先手";
+    $("#setup-tip").innerHTML = race ? "两人轮流选砖、落砖。<br>完成一横行仍继续，最后所需图案线完成时，立即贴墙判胜。" : "宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。<br>超时自动落砖，返回大厅暂停计时。";
+  }
   function completeAI(id, result) {
-    if (id !== requestId || !game || game.turn !== "rival" || game.phase !== "playing") return;
+    if (id !== requestId || !game || localDuel() || game.turn !== "rival" || game.phase !== "playing") return;
     clearTimeout(watchdog); clearInterval(ticker); fallbackPending = false;
     worker?.terminate(); worker = null; busy = false;
     const legal = E.legalMoves(game.position, "rival");
@@ -2166,7 +2338,7 @@ self.onmessage = function (event) {
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=11");
+      } else worker = new Worker("ai-worker.js?v=14");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
@@ -2197,6 +2369,7 @@ self.onmessage = function (event) {
   $("#helper-tab").addEventListener("click", () => { location.hash = "helper"; });
   window.addEventListener("hashchange", () => { showMode(); render(); });
   $("#new-match").addEventListener("click", () => start());
+  document.querySelectorAll('input[name="variant"]').forEach(input => input.addEventListener("change", syncSetup));
   $("#resume-slot").addEventListener("click", (event) => { if (event.target.closest("[data-game-resume]")) { location.hash = "match"; showMode(); render(); } });
   $("#match-content").addEventListener("click", (event) => {
     const b = event.target.closest("button");
@@ -2222,7 +2395,8 @@ self.onmessage = function (event) {
   document.addEventListener("keydown", (event) => { if (event.key === "Escape" && location.hash === "#match") { overlay = null; selection = null; pendingRow = undefined; render(); } });
   if (game) document.querySelector(`input[name="difficulty"][value="${game.level}"]`).checked = true;
   if (game?.turnSeconds) $("#game-seconds").value = String(game.turnSeconds);
-  showMode(); render();
+  if (game?.mode === "race") document.querySelector('input[name="variant"][value="race"]').checked = true;
+  syncSetup(); showMode(); render();
   setInterval(updateClock, 250);
 })();
 
