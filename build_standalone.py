@@ -10,7 +10,7 @@ html = re.sub(r'<link rel="stylesheet" href="([^"?]+)(?:\?[^\"]*)?">',
               lambda match: "<style>\n" + (folder / match[1]).read_text(encoding="utf-8") + "\n</style>", html)
 scripts = re.findall(r'<script src="([^"?]+)(?:\?[^\"]*)?" defer></script>', html)
 html = re.sub(r'  <script src="[^\"]+" defer></script>\n', "", html)
-worker = "\n".join((folder / name).read_text(encoding="utf-8") for name in ("engine.js", "ai.js", "worker-handler.js"))
+worker = "\n".join((folder / name).read_text(encoding="utf-8") for name in ("engine.js", "search-ai.js", "ai.js", "worker-handler.js"))
 (folder / "ai-worker.js").write_text(worker, encoding="utf-8")
 inline = '<script id="ai-worker-source" type="text/plain">\n' + worker + "\n</script>\n"
 inline += "\n".join("<script>\n" + (folder / name).read_text(encoding="utf-8") + "\n</script>" for name in scripts)

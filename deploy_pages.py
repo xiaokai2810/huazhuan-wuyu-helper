@@ -27,6 +27,7 @@ FILES = (
     "deploy_pages.py",
     "game-engine.js",
     "ai.js",
+    "search-ai.js",
     "ai-worker.js",
     "worker-handler.js",
     "game-ui.js",
@@ -90,7 +91,7 @@ def main():
         "tree": [{"path": name, "mode": "100644", "type": "blob", "content": (ROOT / name).read_text(encoding="utf-8")} for name in FILES],
     })
     _, new_commit = request("POST", f"{repo_path}/git/commits", {
-        "message": "Add three-level AI matches alongside the position helper",
+        "message": "Refine the match interface and strengthen the top AI search",
         "tree": tree["sha"], "parents": [parent],
     })
     request("PATCH", f"{repo_path}/git/refs/heads/{quote(branch)}", {"sha": new_commit["sha"], "force": False})

@@ -5,7 +5,7 @@
   const LEVELS = {
     easy: { name: "入门", description: "练习规则，出手保留随机性" },
     medium: { name: "进阶", description: "重视相邻得分、完成率和地板风险" },
-    hard: { name: "大师", description: "多步对抗搜索，争夺关键砖与轮末主动权" },
+    hard: { name: "宗师", description: "极限强度 · 深度博弈与轮末精算" },
   };
   function boardValue(board, projection, ending, supply) {
     let value = Math.max(0, board.score + projection.net);
@@ -67,7 +67,7 @@
     children.sort((a, b) => turn === perspective ? b.value - a.value : a.value - b.value);
     return children;
   }
-  function chooseMove(position, player, level = "medium", options = {}) {
+  function chooseLegacyMove(position, player, level = "medium", options = {}) {
     const rng = options.random || Math.random;
     const owner = options.tokenOwner || player;
     const started = performance.now();
@@ -138,5 +138,9 @@
     }
     return { move: best.move, depth: depthDone, nodes, solved, elapsed: performance.now() - started };
   }
-  root.AzulAI = { LEVELS, chooseMove, evaluate };
+  function chooseMove(position, player, level = "medium", options = {}) {
+    if (level === "hard" && root.AzulSearch) return root.AzulSearch.chooseMove(position, player, options);
+    return chooseLegacyMove(position, player, level, options);
+  }
+  root.AzulAI = { LEVELS, chooseMove, chooseLegacyMove, evaluate };
 })(globalThis);
