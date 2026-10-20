@@ -4,18 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>花砖物语 · 人机对战与对局助手</title>
-  <link rel="stylesheet" href="style.css?v=15">
-  <link rel="stylesheet" href="game.css?v=15">
-  <link rel="stylesheet" href="ceramic.css?v=15">
-  <script src="tile-art.js?v=15" defer></script>
-  <script src="engine.js?v=15" defer></script>
-  <script src="app.js?v=15" defer></script>
-  <script src="game-engine.js?v=15" defer></script>
-  <script src="search-ai.js?v=15" defer></script>
-  <script src="ai.js?v=15" defer></script>
-  <script src="game-ui.js?v=15" defer></script>
+  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="game.css?v=16">
+  <link rel="stylesheet" href="ceramic.css?v=16">
+  <script src="tile-art.js?v=16" defer></script>
+  <script src="engine.js?v=16" defer></script>
+  <script src="app.js?v=16" defer></script>
+  <script src="game-engine.js?v=16" defer></script>
+  <script src="search-ai.js?v=16" defer></script>
+  <script src="ai.js?v=16" defer></script>
+  <script src="audio.js?v=16" defer></script>
+  <script src="game-ui.js?v=16" defer></script>
 </head>
 <body>
+  <audio id="background-music" src="assets/porcelain-garden.mp3?v=16" loop preload="none" hidden></audio>
   <div class="app-shell">
     <header class="hero">
       <div class="hero-copy">
@@ -26,6 +28,12 @@
       <div class="hero-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </header>
 
+    <section class="soundbar" aria-label="背景音乐">
+      <div class="soundtrack"><span class="sound-waves" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><b>瓷光小调</b><small>舒缓轻音乐 · 循环陪伴</small></div></div>
+      <button type="button" class="music-toggle" data-music-toggle aria-label="播放背景音乐" aria-pressed="false"><span aria-hidden="true">♫</span><span data-music-status>播放音乐</span></button>
+      <label class="music-volume">音量<input type="range" min="0" max="100" value="28" step="1" data-music-volume aria-label="背景音乐音量"><output data-volume-value>28%</output></label>
+    </section>
+
     <nav class="mode-tabs" role="tablist" aria-label="玩法切换">
       <button type="button" id="play-tab" role="tab" aria-controls="play-mode" aria-selected="true">开始对局 <span>经典人机 · 双人竞速</span></button>
       <button type="button" id="helper-tab" role="tab" aria-controls="helper-mode" aria-selected="false">对局助手 <span>录入棋盘，推荐出手</span></button>
@@ -34,18 +42,19 @@
     <section id="play-mode" role="tabpanel" aria-labelledby="play-tab">
       <div class="lobby-layout"><div class="match-setup panel">
         <div class="setup-title"><span class="section-kicker" id="setup-kicker">CLASSIC DUEL / 经典对局</span><h2 id="setup-heading">这一局，想挑战谁？</h2><p id="setup-description">本地算法对手 · 经典彩色墙 · 随时继续</p></div>
-        <fieldset class="variant-options"><legend class="sr-only">选择玩法</legend>
-          <label class="variant-card"><input type="radio" name="variant" value="standard" checked><b>经典人机</b><small>四档算法 · 按积分决胜</small></label>
-          <label class="variant-card race"><input type="radio" name="variant" value="race"><b>双人满墙竞速 <em>新</em></b><small>同机轮流 · 先满 25 格获胜</small></label>
+        <div class="setup-current" aria-live="polite"><span aria-hidden="true">✓</span><div><small>当前选择</small><strong id="setup-current">经典人机 · 巅峰 · 90 秒</strong></div></div>
+        <fieldset class="variant-options"><legend>01 <span>选择玩法</span></legend>
+          <label class="variant-card"><input type="radio" name="variant" value="standard" checked><span class="choice-indicator" aria-hidden="true">✓</span><b>经典人机</b><small>与算法对战 · 按积分决胜</small></label>
+          <label class="variant-card race"><input type="radio" name="variant" value="race"><span class="choice-indicator" aria-hidden="true">✓</span><b>双人满墙竞速</b><small>两人轮流 · 先满 25 格获胜</small></label>
         </fieldset>
         <p id="race-note" class="race-note hidden">两位玩家在同一部手机轮流操作。不限轮次，填满一行仍继续；最后所需图案线完成时，立即贴墙并判定满墙者获胜。</p>
-        <fieldset class="difficulty-options"><legend class="sr-only">人机强度</legend>
-          <label class="difficulty-card"><input type="radio" name="difficulty" value="easy"><i class="difficulty-symbol">Ⅰ</i><span><b>入门</b><small>慢慢熟悉，每一块都有可能</small></span><em>轻松练习</em></label>
-          <label class="difficulty-card"><input type="radio" name="difficulty" value="medium"><i class="difficulty-symbol">Ⅱ</i><span><b>进阶</b><small>把握相邻，算好每一步收益</small></span><em>认真较量</em></label>
-          <label class="difficulty-card"><input type="radio" name="difficulty" value="hard"><i class="difficulty-symbol">Ⅲ</i><span><b>宗师</b><small>深度博弈，争夺整轮主动权</small></span><em>深算对手</em></label>
-          <label class="difficulty-card master"><input type="radio" name="difficulty" value="expert" checked><i class="difficulty-symbol">Ⅳ</i><span><b>巅峰 <sup>新</sup></b><small>纵览全场，兼顾争砖与布局</small></span><em>最高强度</em></label>
+        <fieldset class="difficulty-options"><legend>02 <span>人机强度</span><small>从轻松入门，到全局博弈</small></legend>
+          <label class="difficulty-card" data-strength="1"><input type="radio" name="difficulty" value="easy"><span class="choice-indicator" aria-hidden="true">✓</span><i class="difficulty-symbol">Ⅰ</i><span class="difficulty-copy"><b>入门</b><small>熟悉规则，轻松落砖</small></span><em><span class="strength-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span>轻松练习</em></label>
+          <label class="difficulty-card" data-strength="2"><input type="radio" name="difficulty" value="medium"><span class="choice-indicator" aria-hidden="true">✓</span><i class="difficulty-symbol">Ⅱ</i><span class="difficulty-copy"><b>进阶</b><small>算好收益，稳步布局</small></span><em><span class="strength-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span>认真较量</em></label>
+          <label class="difficulty-card" data-strength="3"><input type="radio" name="difficulty" value="hard"><span class="choice-indicator" aria-hidden="true">✓</span><i class="difficulty-symbol">Ⅲ</i><span class="difficulty-copy"><b>宗师</b><small>深度推演，抢占先机</small></span><em><span class="strength-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span>深算对手</em></label>
+          <label class="difficulty-card master" data-strength="4"><input type="radio" name="difficulty" value="expert" checked><span class="choice-indicator" aria-hidden="true">✓</span><i class="difficulty-symbol">Ⅳ</i><span class="difficulty-copy"><b>巅峰 <sup>最强</sup></b><small>纵览全场，争砖制胜</small></span><em><span class="strength-meter" aria-hidden="true"><i></i><i></i><i></i><i></i></span>最高强度</em></label>
         </fieldset>
-        <div class="new-match-controls"><div class="match-settings"><label>每步限时 <select id="game-seconds"><option value="90">90 秒</option><option value="60">60 秒</option></select></label><label>首轮先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机决定</option></select></label></div><button type="button" id="new-match" class="primary-button">开始对局 <span>↗</span></button></div>
+        <div class="new-match-controls"><div class="match-settings"><label>每步限时 <select id="game-seconds"><option value="90">90 秒</option><option value="60">60 秒</option></select></label><label>首轮先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机决定</option></select></label></div><button type="button" id="new-match" class="primary-button"><span id="start-label">挑战巅峰</span><span aria-hidden="true">↗</span></button></div>
         <div id="resume-slot"></div>
       </div><aside class="lobby-side"><span class="section-kicker">一眼看懂</span><h2>简单落砖，<br>细细思量。</h2><ol><li><b>选砖</b><span>从一个圆盘拿走全部同色砖。</span></li><li><b>落砖</b><span>放入一条图案线，多余的会扣分。</span></li><li><b>成墙</b><span>完整图案线贴到墙上，相邻得分。</span></li></ol><div class="lobby-tip" id="setup-tip">巅峰同时推演双方棋盘与公共余砖。<br>算出即落子，轮末直接精算。<br>超时自动落砖，返回大厅暂停计时。</div></aside></div>
     </section>

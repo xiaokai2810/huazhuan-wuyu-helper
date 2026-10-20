@@ -4,6 +4,7 @@
 运行：run-with-env shadow-blade -- python3 deploy_pages.py
 """
 
+import base64
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,9 @@ FILES = (
     "game.test.js",
     "package.json",
     "ai-benchmark.js",
+    "audio.js",
+    "compose_bgm.py",
+    "assets/porcelain-garden.mp3",
 )
 BASE = "https://api.github.com"
 TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -88,12 +92,23 @@ def main():
     _, ref = request("GET", f"{repo_path}/git/ref/heads/{quote(branch)}")
     parent = ref["object"]["sha"]
     _, commit = request("GET", f"{repo_path}/git/commits/{parent}")
+    entries = []
+    for name in FILES:
+        entry = {"path": name, "mode": "100644", "type": "blob"}
+        if name.endswith(".mp3"):
+            _, blob = request("POST", f"{repo_path}/git/blobs", {
+                "content": base64.b64encode((ROOT / name).read_bytes()).decode("ascii"), "encoding": "base64",
+            })
+            entry["sha"] = blob["sha"]
+        else:
+            entry["content"] = (ROOT / name).read_text(encoding="utf-8")
+        entries.append(entry)
     _, tree = request("POST", f"{repo_path}/git/trees", {
         "base_tree": commit["tree"]["sha"],
-        "tree": [{"path": name, "mode": "100644", "type": "blob", "content": (ROOT / name).read_text(encoding="utf-8")} for name in FILES],
+        "tree": entries,
     })
     _, new_commit = request("POST", f"{repo_path}/git/commits", {
-        "message": "Add strategic expert opponent and shorten algorithm response time",
+        "message": "Add original background music and clearer game selections",
         "tree": tree["sha"], "parents": [parent],
     })
     request("PATCH", f"{repo_path}/git/refs/heads/{quote(branch)}", {"sha": new_commit["sha"], "force": False})

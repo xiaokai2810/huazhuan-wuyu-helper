@@ -137,7 +137,8 @@
     $("#resume-slot").innerHTML = game ? `<button type="button" class="resume-button" data-game-resume="true"><span><b>${game.phase === "finished" ? "查看上一局" : "继续上次对局"}</b><small>${matchLabel()} · 第 ${game.round} 轮 · ${game.mode === "race" ? `${G.wallCount(game.position.me)} : ${G.wallCount(game.position.rival)} 格` : `${game.position.me.score} : ${game.position.rival.score}`}</small></span><i>→</i></button>` : "";
     if (!game) { $("#match-content").innerHTML = ""; return; }
     const status = game.phase === "finished" ? "对局结束" : game.phase === "roundEnd" ? "本轮结算" : localDuel() ? `${playerName(game.turn)} 回合` : game.turn === "me" ? "轮到你了" : "对手思考中";
-    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">${globalThis.AzulArt.rosette()}花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${game.mode === "race" ? "满墙竞速" : AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    $("#match-content").innerHTML = `<header class="table-topbar"><button type="button" data-game-home="true" class="table-back">← <span>大厅</span></button><div class="table-brand">${globalThis.AzulArt.rosette()}花砖物语 <small>AZUL</small></div><div class="table-tools"><button type="button" class="music-toggle" data-music-toggle data-music-compact aria-label="播放背景音乐" aria-pressed="false"><span aria-hidden="true">♫</span><span data-music-status>音乐</span></button><button type="button" data-game-overlay="rules">规则</button><button type="button" data-game-overlay="log">记录</button></div></header><div class="duel-score">${renderScore("me")}<div class="duel-round"><small>第 ${game.round} 轮 · ${game.mode === "race" ? "满墙竞速" : AI.LEVELS[game.level].name}</small><b>${status}</b>${renderClock()}</div>${renderScore("rival")}</div><main class="table-stage">${renderBoard("me")}${renderMarket()}${renderBoard("rival")}</main>${renderDock()}${renderDrawer()}${renderResults()}`;
+    globalThis.AzulAudio?.sync();
     updateClock();
     if (location.hash === "#match" && game.phase === "playing" && game.turn === "rival" && !localDuel() && !busy) runAI();
   }
@@ -157,6 +158,9 @@
   function syncSetup() {
     const race = document.querySelector('input[name="variant"]:checked').value === "race";
     $(".difficulty-options").classList.toggle("hidden", race);
+    const chosen = AI.LEVELS[document.querySelector('input[name="difficulty"]:checked').value].name;
+    $("#setup-current").textContent = `${race ? "双人满墙竞速 · 同机双人" : `经典人机 · ${chosen}`} · ${$("#game-seconds").value} 秒`;
+    $("#start-label").textContent = race ? "开始双人竞速" : `挑战${chosen}`;
     $("#race-note").classList.toggle("hidden", !race);
     $("#setup-kicker").textContent = race ? "WALL RACE / 满墙竞速" : "CLASSIC DUEL / 经典对局";
     $("#setup-heading").textContent = race ? "谁先铺满整面墙？" : "这一局，想挑战谁？";
@@ -186,7 +190,7 @@
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=15");
+      } else worker = new Worker("ai-worker.js?v=16");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
@@ -217,6 +221,7 @@
   $("#helper-tab").addEventListener("click", () => { location.hash = "helper"; });
   window.addEventListener("hashchange", () => { showMode(); render(); });
   $("#new-match").addEventListener("click", () => start());
+  $("#game-seconds").addEventListener("change", syncSetup);
   document.querySelectorAll('input[name="variant"]').forEach(input => input.addEventListener("change", syncSetup));
   document.querySelectorAll('input[name="difficulty"]').forEach(input => input.addEventListener("change", syncSetup));
   $("#resume-slot").addEventListener("click", (event) => { if (event.target.closest("[data-game-resume]")) { location.hash = "match"; showMode(); render(); } });

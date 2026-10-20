@@ -1,11 +1,14 @@
 """把开发文件合并为可双击打开的单文件版本。"""
 
 from pathlib import Path
+import base64
 import re
 
 
 folder = Path(__file__).resolve().parent
 html = (folder / "index.html").read_text(encoding="utf-8")
+html = re.sub(r'src="(assets/[^"?]+\.mp3)(?:\?[^\"]*)?"',
+              lambda match: 'src="data:audio/mpeg;base64,' + base64.b64encode((folder / match[1]).read_bytes()).decode("ascii") + '"', html)
 html = re.sub(r'<link rel="stylesheet" href="([^"?]+)(?:\?[^\"]*)?">',
               lambda match: "<style>\n" + (folder / match[1]).read_text(encoding="utf-8") + "\n</style>", html)
 scripts = re.findall(r'<script src="([^"?]+)(?:\?[^\"]*)?" defer></script>', html)
