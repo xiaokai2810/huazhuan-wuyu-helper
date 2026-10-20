@@ -5,7 +5,8 @@
   const LEVELS = {
     easy: { name: "入门", description: "练习规则，出手保留随机性" },
     medium: { name: "进阶", description: "重视相邻得分、完成率和地板风险" },
-    hard: { name: "宗师", description: "极限强度 · 深度博弈与轮末精算" },
+    hard: { name: "宗师", description: "深度博弈 · 争夺整轮主动权" },
+    expert: { name: "巅峰", description: "全局对抗 · 兼顾争砖、布局与终局" },
   };
   function boardValue(board, projection, ending, supply) {
     let value = Math.max(0, board.score + projection.net);
@@ -139,6 +140,7 @@
     return { move: best.move, depth: depthDone, nodes, solved, elapsed: performance.now() - started };
   }
   function chooseMove(position, player, level = "medium", options = {}) {
+    if (level === "expert" && root.AzulSearch) return root.AzulSearch.chooseMove(position, player, { ...options, strategic: true });
     if (level === "hard" && root.AzulSearch) return root.AzulSearch.chooseMove(position, player, options);
     return chooseLegacyMove(position, player, level, options);
   }

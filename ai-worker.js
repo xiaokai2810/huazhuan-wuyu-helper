@@ -235,7 +235,7 @@
   };
 })(globalThis);
 
-// 宗师搜索器：把公开棋盘压缩为数字状态，减少每一层搜索的复制与计分开销。
+// 宗师 / 巅峰搜索器：压缩公开局面，迭代加深，计算完成即返回。
 (function (root) {
   "use strict";
   const E = root.AzulEngine;
@@ -361,7 +361,81 @@
     }
     return value;
   }
-  function evaluateCompact(s, perspective, ctx, isTerminal = false) {
+  // 巅峰评估：比较双方对同一来源的需求，识别先取和卡位的机会。
+  // 墙面形状、长线占用、整列/同色目标与下一次拿砖的竞争一起估价。
+  function strategicValue(s, side, p, ctx, supply, groups) {
+    const w = p.wall, cols = [0, 0, 0, 0, 0], colors = [0, 0, 0, 0, 0];
+    let value = p.score + bonus(w), opportunities = [];
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (w[r] & (1 << c)) { cols[c]++; colors[(c - r + 5) % 5]++; }
+    for (let c = 0; c < 5; c++) {
+      if (cols[c] < 5) value += 7 * (cols[c] / 5) ** 2.6;
+      if (colors[c] < 5) value += 10 * (colors[c] / 5) ** 2.6;
+    }
+    for (let r = 0; r < 5; r++) {
+      const line = s.lines[side * 5 + r], held = line & 7, color = line >>> 3, capacity = r + 1;
+      let bestFuture = 0;
+      for (let c = 0; c < 5; c++) {
+        const col = (c + r) % 5;
+        if (w[r] & (1 << col)) continue;
+        const gain = tileScore(w, r, col);
+        // 已有墙砖会提高未来贴砖收益；优先保留有连片发展空间的行。
+        bestFuture = Math.max(bestFuture, (gain - 1) / Math.sqrt(capacity));
+        if (held >= capacity || (line !== EMPTY && color !== c)) continue;
+        const need = capacity - held;
+        const target = gain + (cols[col] === 4 ? 5.5 : cols[col] * 0.3) + (colors[c] === 4 ? 8 : colors[c] * 0.4);
+        if (held) {
+          const feasible = supply[c] >= need;
+          value += (held / capacity) ** 1.3 * (target + 0.7) * (feasible ? 0.78 : 0.46);
+          // 难以补齐的长线将占住整行，减少下一轮可用落点。
+          if (!feasible) value -= (1 - held / capacity) * 0.45;
+        }
+        for (const group of groups[c]) {
+          const placed = Math.min(need, group.count), extra = group.count - placed + Number(group.marker);
+          const floor = side ? s.f1 : s.f0;
+          const cost = Math.min(p.score, PENALTY[Math.min(7, floor + extra)] - PENALTY[floor]);
+          const progress = (held + placed) / capacity;
+          const before = held ? (held / capacity) ** 1.3 * 0.78 : 0;
+          const utility = target * ((progress === 1 ? 1 : progress ** 1.3 * 0.78) - before) - cost;
+          opportunities.push({ source: group.source, color: c, utility });
+        }
+      }
+      value += bestFuture * 0.28;
+    }
+    // 每个来源颜色组只能拿一次；用最有价值的几个机会估计局面机动性。
+    opportunities.sort((a, b) => b.utility - a.utility);
+    const distinct = [], seen = new Set();
+    for (const o of opportunities) {
+      const id = o.source * 5 + o.color;
+      if (seen.has(id)) continue;
+      seen.add(id); distinct.push(o);
+      if (distinct.length === 3) break;
+    }
+    return { value, opportunities: distinct };
+  }
+  function strategicEvaluation(s, a, b, ctx, supply, turn) {
+    const groups = Array.from({ length: 5 }, () => []);
+    for (let c = 0; c < 5; c++) {
+      if (s.center[c]) groups[c].push({ source: -1, count: s.center[c], marker: s.marker });
+      for (let i = 0; i < s.factories.length; i++) {
+        const count = (s.factories[i] >>> (c * 3)) & 7;
+        if (count) groups[c].push({ source: i, count, marker: false });
+      }
+    }
+    const boards = [strategicValue(s, 0, a, ctx, supply, groups), strategicValue(s, 1, b, ctx, supply, groups)];
+    let value = boards[0].value - boards[1].value;
+    if (turn !== undefined) {
+      const active = boards[turn].opportunities, passive = boards[1 - turn].opportunities;
+      let initiative = (active[0]?.utility || 0) * 0.22 - (passive[0]?.utility || 0) * 0.14;
+      // 对手最需要的组若同时也是自己的好落点，先取会直接切断其补线机会。
+      if (active[0] && passive[0] && active[0].source === passive[0].source && active[0].color === passive[0].color) {
+        initiative += Math.min(Math.max(0, active[0].utility), Math.max(0, passive[0].utility)) * 0.16;
+      }
+      value += turn ? -initiative : initiative;
+    }
+    if (!s.marker) value += s.owner ? -0.9 : 0.9;
+    return value;
+  }
+  function evaluateCompact(s, perspective, ctx, isTerminal = false, turn) {
     const a = project(s, 0, ctx), b = project(s, 1, ctx);
     const ending = a.rows || b.rows;
     let value;
@@ -371,20 +445,25 @@
     } else {
       const supply = s.center.slice();
       for (const packed of s.factories) for (let c = 0; c < 5; c++) supply[c] += (packed >>> (c * 3)) & 7;
-      value = futureValue(s, 0, a, ctx, supply) - futureValue(s, 1, b, ctx, supply);
-      if (!s.marker) value += s.owner ? -0.7 : 0.7;
+      if (ctx.strategic) value = strategicEvaluation(s, a, b, ctx, supply, turn);
+      else {
+        value = futureValue(s, 0, a, ctx, supply) - futureValue(s, 1, b, ctx, supply);
+        if (!s.marker) value += s.owner ? -0.7 : 0.7;
+      }
     }
     return Math.round(value * (perspective ? -100 : 100));
   }
-  function evaluate(position, player, owner) {
+  function evaluate(position, player, owner, options = {}) {
     const { s, context, player: side } = prepare(position, player, owner);
-    return evaluateCompact(s, side, context, !remaining(s)) / 100;
+    context.strategic = options.strategic;
+    return evaluateCompact(s, side, context, !remaining(s), options.turn === "me" ? 0 : options.turn === "rival" ? 1 : undefined) / 100;
   }
   function publicMove(m) { return { kind: m.source < 0 ? "center" : "factory", index: m.source, color: E.COLORS[m.color], row: m.row < 0 ? null : m.row, count: m.count }; }
   function chooseMove(position, player, options = {}) {
     const start = performance.now();
     const { s, context: ctx, player: side } = prepare(position, player, options.tokenOwner || player, options.round || 1);
-    const deadline = start + (options.timeMs ?? 7800), maxNodes = options.maxNodes ?? 3000000;
+    ctx.strategic = Boolean(options.strategic);
+    const deadline = start + (options.timeMs ?? (ctx.strategic ? 1500 : 900)), maxNodes = options.maxNodes ?? 500000;
     const table = new Map(), STOP = Symbol("search budget");
     const count = remaining(s), exactRound = count <= 8;
     let nodes = 0, depthDone = 1, solved = count <= 1, best;
@@ -392,7 +471,7 @@
     function ordered(state, turn, hint) {
       const candidates = generate(state, turn, ctx).map((move) => {
         const child = apply(state, move, turn);
-        return { move, child, value: evaluateCompact(child, turn, ctx, !remaining(child)), hint: moveId(move) === hint ? 1 : 0 };
+        return { move, child, value: evaluateCompact(child, turn, ctx, !remaining(child), 1 - turn), hint: moveId(move) === hint ? 1 : 0 };
       });
       candidates.sort((a, b) => b.hint - a.hint || b.value - a.value);
       return candidates;
@@ -401,7 +480,8 @@
       nodes++;
       if (!(nodes & 63)) check();
       const rest = remaining(state);
-      if (!rest || depth <= 0) return evaluateCompact(state, turn, ctx, !rest);
+      if (!rest || (depth <= 0 && !(ctx.strategic && rest <= 3))) return evaluateCompact(state, turn, ctx, !rest, turn);
+      if (depth <= 0) depth = rest;
       const hash = key(state, turn), cached = table.get(hash);
       const a0 = alpha, b0 = beta;
       if (cached && cached.depth >= depth) {
@@ -412,11 +492,12 @@
       let children = ordered(state, turn, cached?.move);
       check();
       // 关键的轮末阶段完整展开。早期扩大候选范围，并用晚着缩减把时间留给主变例。
-      if (rest > 8) children = children.slice(0, 24);
+      if (rest > 8) children = children.slice(0, ctx.strategic ? 36 : 24);
       let value = -Infinity, chosen = children[0]?.move;
       for (let i = 0; i < children.length; i++) {
         const child = children[i];
-        const reduction = !exactRound && rest > 8 && i >= 6 && depth >= 3 ? 1 : 0;
+        const finishes = child.move.row >= 0 && ((child.child.lines[turn * 5 + child.move.row] & 7) === child.move.row + 1);
+        const reduction = !exactRound && rest > 8 && i >= (ctx.strategic ? 10 : 6) && depth >= 3 && !(ctx.strategic && finishes) ? 1 : 0;
         let result;
         if (!i) result = -search(child.child, 1 - turn, depth - 1, -beta, -alpha);
         else {
@@ -461,7 +542,8 @@
   const LEVELS = {
     easy: { name: "入门", description: "练习规则，出手保留随机性" },
     medium: { name: "进阶", description: "重视相邻得分、完成率和地板风险" },
-    hard: { name: "宗师", description: "极限强度 · 深度博弈与轮末精算" },
+    hard: { name: "宗师", description: "深度博弈 · 争夺整轮主动权" },
+    expert: { name: "巅峰", description: "全局对抗 · 兼顾争砖、布局与终局" },
   };
   function boardValue(board, projection, ending, supply) {
     let value = Math.max(0, board.score + projection.net);
@@ -595,6 +677,7 @@
     return { move: best.move, depth: depthDone, nodes, solved, elapsed: performance.now() - started };
   }
   function chooseMove(position, player, level = "medium", options = {}) {
+    if (level === "expert" && root.AzulSearch) return root.AzulSearch.chooseMove(position, player, { ...options, strategic: true });
     if (level === "hard" && root.AzulSearch) return root.AzulSearch.chooseMove(position, player, options);
     return chooseLegacyMove(position, player, level, options);
   }

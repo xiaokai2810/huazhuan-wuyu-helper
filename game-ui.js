@@ -163,7 +163,9 @@
     $("#setup-description").textContent = race ? "同机双人 · 不限轮次 · 先满 25 格获胜" : "本地算法对手 · 经典彩色墙 · 随时继续";
     $("#game-first").options[0].textContent = race ? "玩家 1 先手" : "我先手";
     $("#game-first").options[1].textContent = race ? "玩家 2 先手" : "人机先手";
-    $("#setup-tip").innerHTML = race ? "两人轮流选砖、落砖。<br>完成一横行仍继续，最后所需图案线完成时，立即贴墙判胜。" : "宗师采用更深的对抗搜索。<br>每手通常思考 5–8 秒，轮末可能更快。<br>超时自动落砖，返回大厅暂停计时。";
+    const level = document.querySelector('input[name="difficulty"]:checked').value;
+    const tips = { easy: "带一点随机性，适合练习规则。", medium: "关注相邻得分、成墙机会与地板风险。", hard: "对抗搜索，争夺本轮主动权。", expert: "同时推演双方棋盘、公共余砖与终局目标。" };
+    $("#setup-tip").innerHTML = race ? "两人轮流选砖、落砖。<br>完成一横行仍继续，最后所需图案线完成时，立即贴墙判胜。" : `${tips[level]}<br>算出即落子，不额外等待。<br>超时自动落砖，返回大厅暂停计时。`;
   }
   function completeAI(id, result) {
     if (id !== requestId || !game || localDuel() || game.turn !== "rival" || game.phase !== "playing") return;
@@ -177,14 +179,14 @@
   function runAI() {
     busy = true;
     const id = ++requestId, started = Date.now();
-    watchdog = setTimeout(() => fallback(id), 22000);
+    watchdog = setTimeout(() => fallback(id), 6000);
     ticker = setInterval(() => { const label = $(".ai-clock"); if (label) label.textContent = `正在思考 · ${Math.floor((Date.now() - started) / 1000)} 秒`; }, 1000);
     try {
       const inline = document.querySelector("#ai-worker-source");
       if (inline) {
         const url = URL.createObjectURL(new Blob([inline.textContent], { type: "application/javascript" }));
         worker = new Worker(url); URL.revokeObjectURL(url);
-      } else worker = new Worker("ai-worker.js?v=14");
+      } else worker = new Worker("ai-worker.js?v=15");
       worker.onmessage = (event) => event.data.error ? fallback(id) : completeAI(id, event.data.result);
       worker.onerror = () => fallback(id);
       // 仅发送公开局面；不发送牌袋顺序、种子或未来发牌。
@@ -194,7 +196,7 @@
   function fallback(id) {
     if (id !== requestId || !busy || fallbackPending) return;
     fallbackPending = true; clearTimeout(watchdog); worker?.terminate(); worker = null;
-    setTimeout(() => { if (id === requestId && game) completeAI(id, AI.chooseMove(game.position, "rival", game.level, { tokenOwner: game.tokenOwner, timeMs: 4000 })); }, 30);
+    setTimeout(() => { if (id === requestId && game) completeAI(id, AI.chooseMove(game.position, "rival", game.level, { tokenOwner: game.tokenOwner, timeMs: 250 })); }, 0);
   }
   function showMode() {
     const matching = location.hash === "#match" && Boolean(game), helping = location.hash === "#helper";
@@ -216,6 +218,7 @@
   window.addEventListener("hashchange", () => { showMode(); render(); });
   $("#new-match").addEventListener("click", () => start());
   document.querySelectorAll('input[name="variant"]').forEach(input => input.addEventListener("change", syncSetup));
+  document.querySelectorAll('input[name="difficulty"]').forEach(input => input.addEventListener("change", syncSetup));
   $("#resume-slot").addEventListener("click", (event) => { if (event.target.closest("[data-game-resume]")) { location.hash = "match"; showMode(); render(); } });
   $("#match-content").addEventListener("click", (event) => {
     const b = event.target.closest("button");

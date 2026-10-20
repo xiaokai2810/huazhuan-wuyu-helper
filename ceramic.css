@@ -222,3 +222,6 @@
   .race-note{font-size:10px;padding:12px;line-height:1.85}
   .board-score.race-progress strong{font-size:19px}.board-score.race-progress strong em{font-size:8px}
 }
+/* 四档人机：两列卡片让等级和策略说明保持易读。 */
+@media(min-width:761px){.difficulty-options{grid-template-columns:repeat(2,minmax(0,1fr))}.difficulty-card{min-height:152px}}
+.difficulty-card sup{font-size:8px;font-weight:500;background:#e5bd71;color:#294e57;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:3px}

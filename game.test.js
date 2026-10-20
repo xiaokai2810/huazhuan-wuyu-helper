@@ -229,7 +229,7 @@ test("压缩计分与原规则的终局胜负、地板和奖励保持一致", ()
   assert.equal(globalThis.AzulSearch.evaluate(p, "me", "rival"), 10001);
 });
 
-test("最后一手同分时，宗师会利用完整横行避免输掉破同分比较", () => {
+test("最后一手同分时，宗师和巅峰会利用完整横行避免输掉破同分比较", () => {
   const p = E.createState();
   p.center.blue = 1; p.firstPlayerToken = false;
   p.me.wall[0] = Array(5).fill(true); p.me.score = 5;
@@ -237,17 +237,72 @@ test("最后一手同分时，宗师会利用完整横行避免输掉破同分�
   p.rival.wall[1][0] = true;
   p.rival.wall[2] = [true, true, false, true, true];
   p.rival.lines[2] = { color: "blue", count: 2 };
-  const result = AI.chooseMove(p, "rival", "hard", { timeMs: 500 });
-  assert.equal(result.move.row, 2);
-  assert.equal(result.solved, true);
+  for (const level of ["hard", "expert"]) {
+    const result = AI.chooseMove(p, "rival", level, { timeMs: 500 });
+    assert.equal(result.move.row, 2);
+    assert.equal(result.solved, true);
+  }
 });
 
-test("三个等级都只返回合法走法，大师遵守思考预算", () => {
+test("四个等级都只返回合法走法，搜索遵守思考预算", () => {
   const game = G.createGame({ seed: 42 });
-  for (const level of ["easy", "medium", "hard"]) {
+  for (const level of ["easy", "medium", "hard", "expert"]) {
     const result = AI.chooseMove(game.position, "me", level, { timeMs: 100, random: () => 0.5 });
     assert.ok(E.legalMoves(game.position).some((m) => G.sameMove(m, result.move)));
     assert.ok(result.elapsed < 800);
+  }
+});
+
+test("巅峰轮末对抗搜索与独立枚举一致，包含圆盘余砖、先手及双方图案线", () => {
+  const p = E.createState();
+  p.factories = [["blue", "blue", "red", "red"], [], [], [], []];
+  p.center.yellow = 1;
+  p.me.lines[1] = { color: "blue", count: 1 };
+  p.rival.lines[2] = { color: "red", count: 2 };
+  p.me.floor = 1; p.rival.floor = 2;
+  const before = JSON.stringify(p);
+  function solve(position, turn, owner) {
+    const moves = E.legalMoves(position, turn);
+    if (!moves.length) return globalThis.AzulSearch.evaluate(position, "rival", owner, { strategic: true });
+    const values = moves.map(move => {
+      const applied = E.applyMove(position, move, turn);
+      return solve(applied.state, G.other(turn), applied.tookMarker ? turn : owner);
+    });
+    return turn === "rival" ? Math.max(...values) : Math.min(...values);
+  }
+  const result = AI.chooseMove(p, "rival", "expert", { timeMs: 2000, tokenOwner: "me" });
+  const applied = E.applyMove(p, result.move, "rival");
+  assert.equal(solve(applied.state, "me", applied.tookMarker ? "rival" : "me"), solve(p, "rival", "me"));
+  assert.equal(result.solved, true);
+  assert.equal(JSON.stringify(p), before);
+});
+
+test("巅峰会抢走对手收官所需的唯一蓝砖，避免贪一分而输棋", () => {
+  const p = E.createState();
+  p.firstPlayerToken = false;
+  p.center.blue = 1; p.center.red = 1;
+  p.me.wall[0] = [false, true, true, true, true];
+  p.me.score = 30; p.rival.score = 31;
+  const result = AI.chooseMove(p, "rival", "expert", { timeMs: 500 });
+  assert.equal(result.move.color, "blue");
+  assert.equal(result.solved, true);
+  assert.ok(result.elapsed < 200, "简单轮末算完即返回，不等待用满500ms");
+  const swapped = { ...structuredClone(p), me: structuredClone(p.rival), rival: structuredClone(p.me) };
+  const mirror = AI.chooseMove(swapped, "me", "expert", { timeMs: 500, tokenOwner: "me" });
+  assert.equal(mirror.move.color, result.move.color);
+  assert.equal(mirror.move.row, result.move.row);
+});
+
+test("巅峰跨轮决策保持合法，不修改棋盘，短预算也能立即给出走法", () => {
+  const game = G.createGame({ seed: 102 });
+  for (let i = 0; i < 40 && game.phase !== "finished"; i++) {
+    if (game.phase === "roundEnd") { G.nextRound(game); continue; }
+    const before = JSON.stringify(game.position);
+    const result = AI.chooseMove(game.position, game.turn, "expert", { timeMs: 12, tokenOwner: game.tokenOwner });
+    assert.ok(E.legalMoves(game.position, game.turn).some(m => G.sameMove(m, result.move)));
+    assert.equal(JSON.stringify(game.position), before);
+    assert.ok(result.elapsed < 250);
+    G.playMove(game, result.move);
   }
 });
 
@@ -257,10 +312,11 @@ test("发布的单文件 Worker 独立运行并返回合法落子", async () => 
   try {
     const game = G.createGame({ seed: 45 });
     const response = new Promise((resolve, reject) => { worker.once("message", resolve); worker.once("error", reject); });
-    worker.postMessage({ id: 7, position: game.position, player: "rival", level: "medium", tokenOwner: "me" });
+    worker.postMessage({ id: 7, position: game.position, player: "rival", level: "expert", tokenOwner: "me" });
     const data = await response;
     assert.equal(data.id, 7);
     assert.ok(E.legalMoves(game.position, "rival").some((move) => G.sameMove(move, data.result.move)));
+    assert.ok(data.result.nodes > 0);
   } finally { await worker.terminate(); }
 });
 

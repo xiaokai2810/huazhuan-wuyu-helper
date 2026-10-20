@@ -49,5 +49,5 @@
   root.AzulArt = { render, frame, plate: () => svg("plate", "plate-art"), rosette: () => svg("rosette", "rosette-art"), avatar: player => svg(`avatar-${player === "me" ? "me" : "rival"}`, "player-portrait") };
   document.body.insertAdjacentHTML("afterbegin", definitions);
   document.querySelectorAll(".hero-mark i").forEach((el, i) => { el.innerHTML = render(colors[[0, 1, 4, 2, 3, 0, 4, 1, 2][i]]); });
-  document.querySelectorAll(".difficulty-symbol").forEach((el, i) => { el.innerHTML = render(["blue", "yellow", "black"][i]); });
+  document.querySelectorAll(".difficulty-symbol").forEach((el, i) => { el.innerHTML = render(["blue", "yellow", "white", "black"][i]); });
 })(globalThis);

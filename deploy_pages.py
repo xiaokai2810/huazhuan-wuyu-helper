@@ -93,7 +93,7 @@ def main():
         "tree": [{"path": name, "mode": "100644", "type": "blob", "content": (ROOT / name).read_text(encoding="utf-8")} for name in FILES],
     })
     _, new_commit = request("POST", f"{repo_path}/git/commits", {
-        "message": "Match the mini-program screenshot and add unlimited two-player wall racing",
+        "message": "Add strategic expert opponent and shorten algorithm response time",
         "tree": tree["sha"], "parents": [parent],
     })
     request("PATCH", f"{repo_path}/git/refs/heads/{quote(branch)}", {"sha": new_commit["sha"], "force": False})
