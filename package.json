@@ -1,0 +1,6 @@
+{
+  "name": "azul-match-helper",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test engine.test.js game.test.js" }
+}

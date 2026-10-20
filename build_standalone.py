@@ -1,18 +1,19 @@
 """把开发文件合并为可双击打开的单文件版本。"""
 
 from pathlib import Path
+import re
 
 
 folder = Path(__file__).resolve().parent
 html = (folder / "index.html").read_text(encoding="utf-8")
-css = (folder / "style.css").read_text(encoding="utf-8")
-engine = (folder / "engine.js").read_text(encoding="utf-8")
-app = (folder / "app.js").read_text(encoding="utf-8")
-
-html = html.replace('<link rel="stylesheet" href="style.css">', f"<style>\n{css}\n</style>")
-html = html.replace('  <script src="engine.js" defer></script>\n', "")
-html = html.replace('  <script src="app.js" defer></script>\n', "")
-html = html.replace("</body>", f"<script>\n{engine}\n</script>\n<script>\n{app}\n</script>\n</body>")
+html = re.sub(r'<link rel="stylesheet" href="([^"?]+)(?:\?[^\"]*)?">',
+              lambda match: "<style>\n" + (folder / match[1]).read_text(encoding="utf-8") + "\n</style>", html)
+scripts = re.findall(r'<script src="([^"?]+)(?:\?[^\"]*)?" defer></script>', html)
+html = re.sub(r'  <script src="[^\"]+" defer></script>\n', "", html)
+worker = "\n".join((folder / name).read_text(encoding="utf-8") for name in ("engine.js", "ai.js", "ai-worker.js"))
+inline = '<script id="ai-worker-source" type="text/plain">\n' + worker + "\n</script>\n"
+inline += "\n".join("<script>\n" + (folder / name).read_text(encoding="utf-8") + "\n</script>" for name in scripts)
+html = html.replace("</body>", inline + "\n</body>")
 
 output = folder / "花砖物语助手.html"
 output.write_text(html, encoding="utf-8")

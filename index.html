@@ -3,22 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>花砖物语 · 对局助手</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="engine.js" defer></script>
-  <script src="app.js" defer></script>
+  <title>花砖物语 · 人机对战与对局助手</title>
+  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="game.css?v=3">
+  <script src="engine.js?v=3" defer></script>
+  <script src="app.js?v=3" defer></script>
+  <script src="game-engine.js?v=3" defer></script>
+  <script src="ai.js?v=3" defer></script>
+  <script src="game-ui.js?v=3" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="hero">
       <div class="hero-copy">
         <div class="eyebrow"><span class="live-dot"></span> 本地运行 · 经典彩色墙规则</div>
-        <h1>花砖物语<span>对局助手</span></h1>
-        <p>把眼前的工厂、中央区和棋盘点进来，查看这一手的推荐取砖与落点。</p>
+        <h1>花砖物语<span>对战工坊</span></h1>
+        <p>挑战三个等级的人机对手，或切换对局助手，分析你眼前的棋盘。</p>
       </div>
       <div class="hero-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </header>
 
+    <nav class="mode-tabs" role="tablist" aria-label="玩法切换">
+      <button type="button" id="play-tab" role="tab" aria-controls="play-mode" aria-selected="true">人机对战 <span>三种强度，完整对局</span></button>
+      <button type="button" id="helper-tab" role="tab" aria-controls="helper-mode" aria-selected="false">对局助手 <span>录入棋盘，推荐出手</span></button>
+    </nav>
+
+    <section id="play-mode" role="tabpanel" aria-labelledby="play-tab">
+      <div class="match-setup panel">
+        <div class="setup-title"><span class="section-kicker">选择你的对手</span><h2>从练习到认真较量</h2></div>
+        <fieldset class="difficulty-options"><legend class="sr-only">人机强度</legend>
+          <label class="difficulty-card"><input type="radio" name="difficulty" value="easy"><span><b>01 入门</b><small>熟悉规则，轻松练习</small></span></label>
+          <label class="difficulty-card"><input type="radio" name="difficulty" value="medium" checked><span><b>02 进阶</b><small>精算收益，减少浪费</small></span></label>
+          <label class="difficulty-card master"><input type="radio" name="difficulty" value="hard"><span><b>03 大师</b><small>多步博弈，争夺关键砖</small></span></label>
+        </fieldset>
+        <div class="new-match-controls"><label>先手 <select id="game-first"><option value="me">我先手</option><option value="rival">人机先手</option><option value="random">随机</option></select></label><button type="button" id="new-match" class="primary-button">开始新局</button></div>
+      </div>
+      <div id="match-content"></div>
+    </section>
+
+    <section id="helper-mode" class="hidden" role="tabpanel" aria-labelledby="helper-tab">
     <div class="top-controls">
       <label class="select-control">人数
         <select id="player-count">
@@ -78,6 +101,7 @@
         </section>
       </aside>
     </main>
+    </section>
     <footer>依据原版 Azul 彩色墙玩法制作 · 如小程序使用变体规则，请以游戏内规则为准</footer>
   </div>
 </body>

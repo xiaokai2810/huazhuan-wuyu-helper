@@ -147,6 +147,7 @@
   });
 
   document.addEventListener("keydown", (event) => {
+    if (document.querySelector("#helper-mode").classList.contains("hidden")) return;
     if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
     if (event.key >= "1" && event.key <= "5") { selectedColor = E.COLORS[Number(event.key) - 1]; renderPalette(); }
     if (event.key === "0") { selectedColor = null; renderPalette(); }

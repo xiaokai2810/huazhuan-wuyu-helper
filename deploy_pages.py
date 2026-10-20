@@ -4,7 +4,6 @@
 运行：run-with-env shadow-blade -- python3 deploy_pages.py
 """
 
-import base64
 import json
 import os
 from pathlib import Path
@@ -26,6 +25,14 @@ FILES = (
     "engine.test.js",
     "build_standalone.py",
     "deploy_pages.py",
+    "game-engine.js",
+    "ai.js",
+    "ai-worker.js",
+    "game-ui.js",
+    "game.css",
+    "game.test.js",
+    "package.json",
+    "ai-benchmark.js",
 )
 BASE = "https://api.github.com"
 TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -74,18 +81,20 @@ def main():
     elif existing.get("description") != "花砖物语（Azul）离线对局助手":
         raise RuntimeError("Repository name already belongs to another project")
     branch = existing["default_branch"]
-    for name in FILES:
-        path = f"{repo_path}/contents/{quote(name)}"
-        status, remote = request("GET", path + f"?ref={quote(branch)}", allowed=(200, 404))
-        payload = {
-            "message": f"Publish {name}",
-            "content": base64.b64encode((ROOT / name).read_bytes()).decode("ascii"),
-            "branch": branch,
-        }
-        if status == 200:
-            payload["sha"] = remote["sha"]
-        request("PUT", path, payload)
-        print(f"uploaded: {name}")
+    _, ref = request("GET", f"{repo_path}/git/ref/heads/{quote(branch)}")
+    parent = ref["object"]["sha"]
+    _, commit = request("GET", f"{repo_path}/git/commits/{parent}")
+    _, tree = request("POST", f"{repo_path}/git/trees", {
+        "base_tree": commit["tree"]["sha"],
+        "tree": [{"path": name, "mode": "100644", "type": "blob", "content": (ROOT / name).read_text(encoding="utf-8")} for name in FILES],
+    })
+    _, new_commit = request("POST", f"{repo_path}/git/commits", {
+        "message": "Add three-level AI matches alongside the position helper",
+        "tree": tree["sha"], "parents": [parent],
+    })
+    request("PATCH", f"{repo_path}/git/refs/heads/{quote(branch)}", {"sha": new_commit["sha"], "force": False})
+    print(f"published commit: {new_commit['sha']}")
+    print(f"files: {len(FILES)}")
 
     pages_path = repo_path + "/pages"
     status, pages = request("GET", pages_path, allowed=(200, 404))

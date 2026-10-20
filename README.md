@@ -1,8 +1,20 @@
-# 花砖物语对局助手
+# 花砖物语：人机对战与对局助手
 
 线上地址：[GitHub Pages](https://xiaokai2810.github.io/huazhuan-wuyu-helper/)。
 
 双击 [花砖物语助手.html](花砖物语助手.html) 即可在浏览器里使用。它是单文件，离线可用。
+
+## 人机对战
+
+打开页面默认进入“人机对战”，选择等级与先手后点击“开始新局”。点击工厂或中央区的一种颜色，再点击自己棋盘左侧的图案线放置。完整支持发牌、地板扣分、跨轮保留、牌袋回收、先手交接及终局奖励；每轮结算后点击下一轮。对局自动保存在本机浏览器，刷新后可以继续。
+
+三个等级使用相同规则：
+
+- 入门：多数出手带有随机性，适合熟悉规则。
+- 进阶：按当前局面评估相邻得分、图案线完成率、终局目标与地板风险。
+- 大师：本页最强等级。在进阶评估上使用迭代加深的对抗搜索、Alpha-Beta 剪枝和局面缓存；早期筛选候选分支，轮末分支少时尝试完整搜索。每手预算约 2.6 秒，优先使用 Web Worker 计算，不能保证全局最优。
+
+人机计算只收到公开棋盘，无法读取未来牌袋顺序。难度在开始新局时生效。页面顶部可随时切换回“对局助手”，两个模式的数据分别保存。
 
 ## 快速录入
 
@@ -23,6 +35,6 @@
 
 规则参考：[Next Move Games 官方 Azul 说明书](https://cdn.svc.asmodee.net/production-nextmove/uploads/sites/4/2024/06/EN-Azul-Rules-Next-Move-web.pdf)。
 
-开发校验：在项目根目录执行 `node --test 交付/花砖物语助手/engine.test.js`。修改源文件后执行 `python3 交付/花砖物语助手/build_standalone.py` 更新单文件版本。
+开发校验：在此目录执行 `npm test`。`node ai-benchmark.js` 用固定种子、轮换先手比较大师与进阶；可通过 `AI_MS=2600` 使用正式的思考预算。修改源文件后执行 `python3 build_standalone.py` 更新单文件版本。
 
 重新发布：在具备 GitHub 凭据的本机执行 `/Users/orange/.codex/global/run-with-env shadow-blade -- python3 deploy_pages.py`。
